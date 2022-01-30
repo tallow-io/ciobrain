@@ -1,0 +1,48 @@
+.header-text {
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 36px;
+    line-height: 42px;
+    vertical-align: middle;
+}
+
+#knowledge-graph-text {
+    position: absolute;
+    width: 300px;
+    height: 50px;
+    left: 29px;
+    top: 20px;
+    background-image: -webkit-radial-gradient(50% 50%, #742AD5, #2527E4, #02CA92);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+#ciobrain-text {
+    position: absolute;
+    width: 150px;
+    height: 42px;
+    right: 25px;
+    top: 18px;
+    background-image: -webkit-radial-gradient(50% 50%, #742AD5, #2527E4, #02CA92);
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+#cloud-img {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    right: 195px;
+    top: 12px;
+}
+
+#toggle-img {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    left: 327px;
+    top: 16px;
+}
