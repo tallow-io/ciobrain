@@ -102,6 +102,12 @@ export default class Graph extends Component {
                 break;
             case "Infrastructure":  assetChildren = await asset.getInfrastructureAssetChildrenById(d.data["Infrastructure ID"]);
                 break;
+            case "People":  assetChildren = await asset.getPeopleAssetChildrenById(d.data["People ID"]);
+                break;
+            case "Projects":  assetChildren = await asset.getProjectsAssetChildrenById(d.data["Projects ID"]);
+                break;
+            case "Business":  assetChildren = await asset.getBusinessAssetChildrenById(d.data["Business ID"]);
+                break;
             default: return;
         }
         assetChildren = assetChildren.children;
@@ -139,6 +145,15 @@ export default class Graph extends Component {
             case 'Infrastructure':
                 hierarchy = await asset.getInfrastructureAssetChildrenById(this.state.selectedAssetKey);
                 break;
+            case 'People':
+                hierarchy = await asset.getPeopleAssetChildrenById(this.state.selectedAssetKey);
+                break;
+            case 'Projects':
+                hierarchy = await asset.getProjectsAssetChildrenById(this.state.selectedAssetKey);
+                break;
+            case 'Business':
+                hierarchy = await asset.getBusinessAssetChildrenById(this.state.selectedAssetKey);
+                break;
         }
         hierarchy = this.createIndex(hierarchy,1);
         this.setState({hierarchy: hierarchy});
@@ -170,6 +185,15 @@ export default class Graph extends Component {
         if (asset['Infrastructure Connections'] && asset['Infrastructure Connections'].trim().length){
             childrenCount += asset['Infrastructure Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
         }
+        if (asset['People Connections'] && asset['People Connections'].trim().length){
+            childrenCount += asset['People Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
+        }
+        if (asset['Projects Connections'] && asset['Projects Connections'].trim().length){
+            childrenCount += asset['Projects Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
+        }
+        if (asset['Business Connections'] && asset['Business Connections'].trim().length){
+            childrenCount += asset['Business Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
+        }
         return childrenCount;
     }
 
@@ -178,6 +202,9 @@ export default class Graph extends Component {
         let applicationAssetChildrenIds = [];
         let dataAssetChildrenIds = [];
         let infrastructureAssetChildrenIds = [];
+        let peopleAssetChildrenIds = [];
+        let projectsAssetChildrenIds = [];
+        let businessAssetChildrenIds = [];
         if (asset2['Application Connections'] && asset2['Application Connections'].trim().length) {
             applicationAssetChildrenIds = asset2['Application Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
             console.log("children: " + JSON.stringify(applicationAssetChildrenIds));
@@ -190,6 +217,18 @@ export default class Graph extends Component {
             infrastructureAssetChildrenIds = asset2['Infrastructure Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
             console.log("children: " + JSON.stringify(infrastructureAssetChildrenIds));
         }
+        if (asset2['People Connections'] && asset2['People Connections'].trim().length){
+            peopleAssetChildrenIds = asset2['People Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
+            console.log("children: " + JSON.stringify(peopleAssetChildrenIds));
+        }
+        if (asset2['Projects Connections'] && asset2['Projects Connections'].trim().length){
+            projectsAssetChildrenIds = asset2['Projects Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
+            console.log("children: " + JSON.stringify(projectsAssetChildrenIds));
+        }
+        if (asset2['Business Connections'] && asset2['Business Connections'].trim().length){
+            businessAssetChildrenIds = asset2['Business Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
+            console.log("children: " + JSON.stringify(businessAssetChildrenIds));
+        }
 
         switch(asset1["Asset Type"]) {
             case 'Application': 
@@ -198,6 +237,12 @@ export default class Graph extends Component {
                 return dataAssetChildrenIds.includes(asset1['Data ID']);
             case 'Infrastructure':
                 return infrastructureAssetChildrenIds.includes(asset1['Infrastructure ID']);
+            case 'People':
+                return peopleAssetChildrenIds.includes(asset1['People ID']);
+            case 'Projects':
+                return projectsAssetChildrenIds.includes(asset1['Projects ID']);
+            case 'Business':
+                return businessAssetChildrenIds.includes(asset1['Business ID']);
         }
     }
 
@@ -208,6 +253,9 @@ export default class Graph extends Component {
             case "Application": return asset1["Application ID"] === asset2["Application ID"];
             case "Data": return asset1["Data ID"] === asset2["Data ID"];
             case "Infrastructure": return asset1["Infrastructure ID"] === asset2["Infrastructure ID"];
+            case "People": return asset1["People ID"] === asset2["People ID"];
+            case "Projects": return asset1["Projects ID"] === asset2["Projects ID"];
+            case "Business": return asset1["Business ID"] === asset2["Business ID"];
             default: return false;
         }
     }
@@ -310,6 +358,12 @@ export default class Graph extends Component {
                     return parseInt(d['Data ID'])
                 else if (d['Infrastructure ID'])
                     return parseInt(d['Infrastructure ID'])
+                else if (d['People ID'])
+                    return parseInt(d['People ID'])
+                else if (d['Projects ID'])
+                    return parseInt(d['Projects ID'])
+                else if (d['Business ID'])
+                    return parseInt(d['Business ID'])
             })
             .sort(function(a, b) { return b.data.index - a.data.index; });
 
@@ -442,6 +496,10 @@ export default class Graph extends Component {
                     case "Application": return appIcon;
                     case "Data":  return dataIcon;
                     case "Infrastructure":  return infrastructureIcon;
+                    //Placeholder icons for People, Projects, and Business
+                    case "People":  return infrastructureIcon;
+                    case "Projects":  return infrastructureIcon;
+                    case "Business":  return infrastructureIcon;
                     default: return;
                 }
             });

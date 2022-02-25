@@ -32,6 +32,15 @@ export default class AssetCategoryOption extends Component {
 			case 'Infrastructure':
 				assetCategoryOption = await asset.getAllInfrastructureAssets();
 				break;
+			case 'People':
+				assetCategoryOption = await asset.getAllPeopleAssets();
+				break;
+			case 'Projects':
+				assetCategoryOption = await asset.getAllProjectsAssets();
+				break;
+			case 'Business':
+				assetCategoryOption = await asset.getAllBusinessAssets();
+				break;
 		}
 		
 		this.setState({assetCategoryOptions: assetCategoryOption});

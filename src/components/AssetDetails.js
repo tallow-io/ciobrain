@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getApplicationAssetById, getDataAssetById, getInfrastructureAssetById } from '../common/Asset';
+import { getApplicationAssetById, getDataAssetById, getInfrastructureAssetById, getPeopleAssetById, getProjectsAssetById, getBusinessAssetById } from '../common/Asset';
 import { AssetCategoryEnum } from './AssetCategoryEnum';
 import AssetCategoryOption from './AssetMenu/AssetCategoryOption';
 import * as ERRORLOG from './../common/ErrorLog'
@@ -49,7 +49,25 @@ export default class AssetDetails extends Component {
                 assetConnections = this.getAssetConnections(asset);
                 this.setState({ asset: asset, assetColor: AssetCategoryEnum.INFRASTRUCTURE.color, assetConnections: assetConnections});
                 break;
+
+            case "People": 
+                asset = await getPeopleAssetById(selectedAssetKey);
+                assetConnections = this.getAssetConnections(asset);
+                this.setState({ asset: asset, assetColor: AssetCategoryEnum.PEOPLE.color, assetConnections: assetConnections});
+                break;
             
+            case "Projects": 
+                asset = await getProjectsAssetById(selectedAssetKey);
+                assetConnections = this.getAssetConnections(asset);
+                this.setState({ asset: asset, assetColor: AssetCategoryEnum.PROJECTS.color, assetConnections: assetConnections});
+                break;
+
+            case "Business": 
+                asset = await getBusinessAssetById(selectedAssetKey);
+                assetConnections = this.getAssetConnections(asset);
+                this.setState({ asset: asset, assetColor: AssetCategoryEnum.BUSINESS.color, assetConnections: assetConnections});
+                break;
+
             default: return;
         }
         this.validateAsset(asset);
@@ -90,6 +108,18 @@ export default class AssetDetails extends Component {
         if(asset["Infrastructure Connections"] && asset['Infrastructure Connections'].trim().length)
         {
             connections += asset['Infrastructure Connections'].split(';').length;
+        }
+        if(asset["People Connections"] && asset['People Connections'].trim().length)
+        {
+            connections += asset['People Connections'].split(';').length;
+        }
+        if(asset["Projects Connections"] && asset['Projects Connections'].trim().length)
+        {
+            connections += asset['Projects Connections'].split(';').length;
+        }
+        if(asset["Business Connections"] && asset['Business Connections'].trim().length)
+        {
+            connections += asset['Business Connections'].split(';').length;
         }
 
         return connections;
