@@ -44,7 +44,7 @@ export default class AssetCategoryOption extends Component {
 
 	selectAsset(event){
 		var arr = JSON.stringify(event.target.outerHTML).split(" ");
-		var assetKey = arr.find(element => element.includes('data-key')).match(/\d/g)[0];
+		var assetKey = arr.find(element => element.includes('data-key')).match(/\d+/g)[0];
 		this.props.selectAsset(assetKey);
 		this.setState({selectedAssetKey: assetKey})
 		event.preventDefault();
