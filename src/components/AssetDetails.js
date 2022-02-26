@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getApplicationAssetById, getDataAssetById, getInfrastructureAssetById, getPeopleAssetById, getProjectsAssetById, getBusinessAssetById } from '../common/Asset';
+import { getApplicationAssetById, getDataAssetById, getInfrastructureAssetById, getTalentAssetById, getProjectsAssetById, getBusinessAssetById } from '../common/Asset';
 import { AssetCategoryEnum } from './AssetCategoryEnum';
 import AssetCategoryOption from './AssetMenu/AssetCategoryOption';
 import * as ERRORLOG from './../common/ErrorLog'
@@ -50,10 +50,10 @@ export default class AssetDetails extends Component {
                 this.setState({ asset: asset, assetColor: AssetCategoryEnum.INFRASTRUCTURE.color, assetConnections: assetConnections});
                 break;
 
-            case "People": 
-                asset = await getPeopleAssetById(selectedAssetKey);
+            case "Talent": 
+                asset = await getTalentAssetById(selectedAssetKey);
                 assetConnections = this.getAssetConnections(asset);
-                this.setState({ asset: asset, assetColor: AssetCategoryEnum.PEOPLE.color, assetConnections: assetConnections});
+                this.setState({ asset: asset, assetColor: AssetCategoryEnum.TALENT.color, assetConnections: assetConnections});
                 break;
             
             case "Projects": 
@@ -109,9 +109,9 @@ export default class AssetDetails extends Component {
         {
             connections += asset['Infrastructure Connections'].split(';').length;
         }
-        if(asset["People Connections"] && asset['People Connections'].trim().length)
+        if(asset["Talent Connections"] && asset['Talent Connections'].trim().length)
         {
-            connections += asset['People Connections'].split(';').length;
+            connections += asset['Talent Connections'].split(';').length;
         }
         if(asset["Projects Connections"] && asset['Projects Connections'].trim().length)
         {

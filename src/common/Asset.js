@@ -5,7 +5,7 @@ let URL = process.env.NODE_ENV==='development'?"http://localhost:3001/asset":"ht
 let applicationAssetURL = URL + '/application'
 let dataAssetURL = URL + '/data'
 let infrastructureAssetURL = URL + '/infrastructure'
-let peopleAssetURL = URL + '/people'
+let talentAssetURL = URL + '/talent'
 let projectsAssetURL = URL + '/projects'
 let businessAssetURL = URL + '/business'
 
@@ -36,9 +36,9 @@ export async function getInfrastructureAssetById(id) {
   }
 }
 
-export async function getPeopleAssetById(id) {
+export async function getTalentAssetById(id) {
   try {
-    const response = await axios.get( peopleAssetURL + '/' + id);
+    const response = await axios.get( talentAssetURL + '/' + id);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -92,9 +92,9 @@ export async function getAllInfrastructureAssets(id) {
   }
 }
 
-export async function getAllPeopleAssets(id) {
+export async function getAllTalentAssets(id) {
   try {
-    const response = await axios.get( peopleAssetURL );
+    const response = await axios.get( talentAssetURL );
     return response.data;
   } catch (error) {
     console.error(error);
@@ -146,9 +146,9 @@ export async function getInfrastructureAssetChildrenById(id) {
   }
 }
 
-export async function getPeopleAssetChildrenById(id) {
+export async function getTalentAssetChildrenById(id) {
   try {
-    const response = await axios.get( peopleAssetURL + '/' + id + '/children');
+    const response = await axios.get( talentAssetURL + '/' + id + '/children');
     return response.data;
   } catch (error) {
     console.error(error);
