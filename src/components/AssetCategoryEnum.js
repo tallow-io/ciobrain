@@ -17,8 +17,8 @@ export const AssetCategoryEnum = {
         color : 'var(--blue)',
         backgroundColor : 'var(--opaque-blue)'
     },
-    PEOPLE: {
-        name : "People",
+    TALENT: {
+        name : "Talent",
         index : "4",
         color : 'var(--yellow)',
         backgroundColor : 'var(--opaque-yellow)'

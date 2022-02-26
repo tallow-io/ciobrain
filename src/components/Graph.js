@@ -102,7 +102,7 @@ export default class Graph extends Component {
                 break;
             case "Infrastructure":  assetChildren = await asset.getInfrastructureAssetChildrenById(d.data["Infrastructure ID"]);
                 break;
-            case "People":  assetChildren = await asset.getPeopleAssetChildrenById(d.data["People ID"]);
+            case "Talent":  assetChildren = await asset.getTalentAssetChildrenById(d.data["Talent ID"]);
                 break;
             case "Projects":  assetChildren = await asset.getProjectsAssetChildrenById(d.data["Projects ID"]);
                 break;
@@ -145,8 +145,8 @@ export default class Graph extends Component {
             case 'Infrastructure':
                 hierarchy = await asset.getInfrastructureAssetChildrenById(this.state.selectedAssetKey);
                 break;
-            case 'People':
-                hierarchy = await asset.getPeopleAssetChildrenById(this.state.selectedAssetKey);
+            case 'Talent':
+                hierarchy = await asset.getTalentAssetChildrenById(this.state.selectedAssetKey);
                 break;
             case 'Projects':
                 hierarchy = await asset.getProjectsAssetChildrenById(this.state.selectedAssetKey);
@@ -185,8 +185,8 @@ export default class Graph extends Component {
         if (asset['Infrastructure Connections'] && asset['Infrastructure Connections'].trim().length){
             childrenCount += asset['Infrastructure Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
         }
-        if (asset['People Connections'] && asset['People Connections'].trim().length){
-            childrenCount += asset['People Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
+        if (asset['Talent Connections'] && asset['Talent Connections'].trim().length){
+            childrenCount += asset['Talent Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
         }
         if (asset['Projects Connections'] && asset['Projects Connections'].trim().length){
             childrenCount += asset['Projects Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
@@ -202,7 +202,7 @@ export default class Graph extends Component {
         let applicationAssetChildrenIds = [];
         let dataAssetChildrenIds = [];
         let infrastructureAssetChildrenIds = [];
-        let peopleAssetChildrenIds = [];
+        let talentAssetChildrenIds = [];
         let projectsAssetChildrenIds = [];
         let businessAssetChildrenIds = [];
         if (asset2['Application Connections'] && asset2['Application Connections'].trim().length) {
@@ -217,9 +217,9 @@ export default class Graph extends Component {
             infrastructureAssetChildrenIds = asset2['Infrastructure Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
             console.log("children: " + JSON.stringify(infrastructureAssetChildrenIds));
         }
-        if (asset2['People Connections'] && asset2['People Connections'].trim().length){
-            peopleAssetChildrenIds = asset2['People Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
-            console.log("children: " + JSON.stringify(peopleAssetChildrenIds));
+        if (asset2['Talent Connections'] && asset2['Talent Connections'].trim().length){
+            talentAssetChildrenIds = asset2['Talent Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
+            console.log("children: " + JSON.stringify(talentAssetChildrenIds));
         }
         if (asset2['Projects Connections'] && asset2['Projects Connections'].trim().length){
             projectsAssetChildrenIds = asset2['Projects Connections'].split(';').map(item => parseInt(item.replace(/\D/g, '')));
@@ -237,8 +237,8 @@ export default class Graph extends Component {
                 return dataAssetChildrenIds.includes(asset1['Data ID']);
             case 'Infrastructure':
                 return infrastructureAssetChildrenIds.includes(asset1['Infrastructure ID']);
-            case 'People':
-                return peopleAssetChildrenIds.includes(asset1['People ID']);
+            case 'Talent':
+                return talentAssetChildrenIds.includes(asset1['Talent ID']);
             case 'Projects':
                 return projectsAssetChildrenIds.includes(asset1['Projects ID']);
             case 'Business':
@@ -253,7 +253,7 @@ export default class Graph extends Component {
             case "Application": return asset1["Application ID"] === asset2["Application ID"];
             case "Data": return asset1["Data ID"] === asset2["Data ID"];
             case "Infrastructure": return asset1["Infrastructure ID"] === asset2["Infrastructure ID"];
-            case "People": return asset1["People ID"] === asset2["People ID"];
+            case "Talent": return asset1["Talent ID"] === asset2["Talent ID"];
             case "Projects": return asset1["Projects ID"] === asset2["Projects ID"];
             case "Business": return asset1["Business ID"] === asset2["Business ID"];
             default: return false;
@@ -358,8 +358,8 @@ export default class Graph extends Component {
                     return parseInt(d['Data ID'])
                 else if (d['Infrastructure ID'])
                     return parseInt(d['Infrastructure ID'])
-                else if (d['People ID'])
-                    return parseInt(d['People ID'])
+                else if (d['Talent ID'])
+                    return parseInt(d['Talent ID'])
                 else if (d['Projects ID'])
                     return parseInt(d['Projects ID'])
                 else if (d['Business ID'])
@@ -496,8 +496,8 @@ export default class Graph extends Component {
                     case "Application": return appIcon;
                     case "Data":  return dataIcon;
                     case "Infrastructure":  return infrastructureIcon;
-                    //Placeholder icons for People, Projects, and Business
-                    case "People":  return infrastructureIcon;
+                    //Placeholder icons for Talent, Projects, and Business
+                    case "Talent":  return infrastructureIcon;
                     case "Projects":  return infrastructureIcon;
                     case "Business":  return infrastructureIcon;
                     default: return;
