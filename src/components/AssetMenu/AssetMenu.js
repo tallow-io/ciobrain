@@ -34,5 +34,16 @@ export default class AssetMenu extends Component {
             </div>
         );
     }
+
+    async componentDidMount() {
+        this.listenToImportButton();
+    }
+
+    listenToImportButton() {
+        const importButton = document.getElementById('assetImportButton');
+        importButton.addEventListener('click', () => {
+            // todo
+        });
+    }
 }
 
