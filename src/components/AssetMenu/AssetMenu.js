@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import AssetCategoryOption from './AssetCategoryOption';
 import { AssetCategoryEnum } from '../AssetCategoryEnum';
+import {ImportButton} from "../ImportData/ImportButton.js";
 
 export default class AssetMenu extends Component {
 
@@ -28,22 +29,11 @@ export default class AssetMenu extends Component {
                     <div>
                         Assets
                     </div>
-                    <button id="assetImportButton">Import</button>
+                    <ImportButton />
                 </div>
                 {Object.values(AssetCategoryEnum).map( category => <AssetCategoryOption category={category.name} selected={this.state.selectedCategory === category.name} color={category.color} backgroundColor={category.name === this.state.selectedCategory ? category.backgroundColor : "white"} selectCategory={this.selectCategory.bind(this)} selectAsset={this.selectAsset.bind(this)} />)}
             </div>
         );
-    }
-
-    async componentDidMount() {
-        this.listenToImportButton();
-    }
-
-    listenToImportButton() {
-        const importButton = document.getElementById('assetImportButton');
-        importButton.addEventListener('click', () => {
-            // todo
-        });
     }
 }
 
