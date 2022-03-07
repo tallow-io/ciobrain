@@ -11,6 +11,7 @@ export const ImportButton = () => (
         position="right top"
         on="hover"
         contentStyle={{ padding: "0px", border: "none" }}
+        nested
     >
         <div className="menu">
             {Object.values(AssetCategoryEnum).map(category =>

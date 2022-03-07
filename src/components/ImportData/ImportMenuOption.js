@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import Popup from "reactjs-popup";
 
 export default class ImportMenuOption extends Component {
+
     render() {
         return (
             <Popup
@@ -11,6 +12,7 @@ export default class ImportMenuOption extends Component {
                     maxWidth: "600px",
                     width: "90%"
                 }}
+                nested
             >{close => (
                 this.popupContent(close)
             )}
