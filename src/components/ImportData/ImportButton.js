@@ -3,6 +3,7 @@ import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
 import './ImportButton.css'
 import {AssetCategoryEnum} from "../AssetCategoryEnum.js";
+import ImportMenuOption from "./ImportMenuOption.js";
 
 export const ImportButton = () => (
     <Popup
@@ -13,7 +14,7 @@ export const ImportButton = () => (
     >
         <div className="menu">
             {Object.values(AssetCategoryEnum).map(category =>
-                <div className="menu-item" style={{color: category.color}}>{category.name}</div>
+                <ImportMenuOption category={category} />
             )}
         </div>
     </Popup>
