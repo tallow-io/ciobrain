@@ -1,15 +1,7 @@
 import React, {Component} from "react";
 import Popup from "reactjs-popup";
-// import { useForm } from "react-hook-form"
 
 export default class ImportMenuOption extends Component {
-    constructor(props) {
-        super(props)
-        // this.assetFile = useForm()
-        // this.handleSubmit = useForm()
-        this.assetFile = React.createRef()
-    }
-
     render() {
         return (
             <Popup
@@ -36,10 +28,10 @@ export default class ImportMenuOption extends Component {
                 <div className="header" style={{color: this.props.category.color}}> Import {this.props.category.name} </div>
                 <div className="content">
                     {/* tried using react-hook-form, failed */}
-                    {/* <form onSubmit={this.handleSubmit(this.loadAssets)}> */}
-                        <input type="file" id="asset-data" ref={this.assetFile}/>
-                        <button onClick={this.loadAssets()}>Load</button>
-                    {/* </form> */}
+                    <form onSubmit={this.loadAssets}>
+                        <input type="file" id="asset-data" onChange={(e) => this.loadAssets(e.target.files[0])}/>
+                        <button onClick={this.loadAssets}>Load</button>
+                    </form>
                 </div>
             </div>
         )
@@ -50,18 +42,16 @@ export default class ImportMenuOption extends Component {
             <div className="menu-item" style={{color: this.props.category.color}}>{this.props.category.name}</div>
         )
     }
-    
-    loadAssets() {
+
+    loadAssets(file) {
         // why is this called when I click the import button and not the load button?
         console.log("test")
 
-        if(this.assetFile.current === null) {
+        if(file === null) {
             return
         }
 
         // it gets this far when I close the popup
-        console.log("loading" + this.assetFile.current.files[0])
-
-        this.assetFile.current = null
+        console.log("loading" + file.name)
     }
 }
