@@ -138,23 +138,84 @@ export default class Graph extends Component {
         switch(this.state.selectedCategory) {
             case 'Application': 
                 hierarchy = await asset.getApplicationAssetChildrenById(this.state.selectedAssetKey);
+                var assets = await asset.getAllAssets()
+                assets.forEach(asset => {
+                    if (asset['Application Connections'] && asset['Application Connections'].trim().length ) {
+                       asset['Application Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
+                           if(conn == this.state.selectedAssetKey) {
+                               hierarchy.children.push(asset)
+                           }
+                       });
+                    }
+                });
                 break;
             case 'Data':
                 hierarchy = await asset.getDataAssetChildrenById(this.state.selectedAssetKey);
+                var assets = await asset.getAllAssets()
+                assets.forEach(asset => {
+                    if (asset['Data Connections'] && asset['Data Connections'].trim().length ) {
+                       asset['Data Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
+                           if(conn == this.state.selectedAssetKey) {
+                               hierarchy.children.push(asset)
+                           }
+                       });
+                    }
+                });
                 break;
             case 'Infrastructure':
                 hierarchy = await asset.getInfrastructureAssetChildrenById(this.state.selectedAssetKey);
+                var assets = await asset.getAllAssets()
+                assets.forEach(asset => {
+                    if (asset['Infrastructure Connections'] && asset['Infrastructure Connections'].trim().length ) {
+                       asset['Infrastructure Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
+                           if(conn == this.state.selectedAssetKey) {
+                               hierarchy.children.push(asset)
+                           }
+                       });
+                    }
+                });
                 break;
             case 'Talent':
                 hierarchy = await asset.getTalentAssetChildrenById(this.state.selectedAssetKey);
+                var assets = await asset.getAllAssets()
+                assets.forEach(asset => {
+                    if (asset['Talent Connections'] && asset['Talent Connections'].trim().length ) {
+                       asset['Talent Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
+                           if(conn == this.state.selectedAssetKey) {
+                               hierarchy.children.push(asset)
+                           }
+                       });
+                    }
+                });
                 break;
             case 'Projects':
                 hierarchy = await asset.getProjectsAssetChildrenById(this.state.selectedAssetKey);
+                var assets = await asset.getAllAssets()
+                assets.forEach(asset => {
+                    if (asset['Projects Connections'] && asset['Projects Connections'].trim().length ) {
+                       asset['Projects Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
+                           if(conn == this.state.selectedAssetKey) {
+                               hierarchy.children.push(asset)
+                           }
+                       });
+                    }
+                });
                 break;
             case 'Business':
                 hierarchy = await asset.getBusinessAssetChildrenById(this.state.selectedAssetKey);
+                var assets = await asset.getAllAssets()
+                assets.forEach(asset => {
+                    if (asset['Business Connections'] && asset['Business Connections'].trim().length ) {
+                       asset['Business Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
+                           if(conn == this.state.selectedAssetKey) {
+                               hierarchy.children.push(asset)
+                           }
+                       });
+                    }
+                });
                 break;
         }
+
         hierarchy = this.createIndex(hierarchy,1);
         this.setState({hierarchy: hierarchy});
         var children = hierarchy['children'];

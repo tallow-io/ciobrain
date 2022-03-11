@@ -94,11 +94,13 @@ export default class AssetDetails extends Component {
         }
     }
 
+    // TODO rename to countAssetConnections because that's what it does
     getAssetConnections(asset) {
         let connections = 0;
 
         if(asset["Application Connections"] && asset['Application Connections'].trim().length)
         {
+            console.log(asset['Application Connections'])
             connections += asset['Application Connections'].split(';').length;
         }
         if(asset["Data Connections"] && asset['Data Connections'].trim().length)

@@ -63,9 +63,8 @@ export async function getBusinessAssetById(id) {
   }
 }
 
-export async function getAllApplicationAssets(id) {
+export async function getAllApplicationAssets() {
   try {
-    console.log("PROCESS ENVIRONMENT: " + process.env.NODE_ENV);
     const response = await axios.get( applicationAssetURL );
     return response.data;
   } catch (error) {
@@ -73,7 +72,7 @@ export async function getAllApplicationAssets(id) {
   }
 }
 
-export async function getAllDataAssets(id) {
+export async function getAllDataAssets() {
   try {
     const response = await axios.get( dataAssetURL );
     return response.data;
@@ -83,7 +82,7 @@ export async function getAllDataAssets(id) {
 }
 
 
-export async function getAllInfrastructureAssets(id) {
+export async function getAllInfrastructureAssets() {
   try {
     const response = await axios.get( infrastructureAssetURL );
     return response.data;
@@ -92,7 +91,7 @@ export async function getAllInfrastructureAssets(id) {
   }
 }
 
-export async function getAllTalentAssets(id) {
+export async function getAllTalentAssets() {
   try {
     const response = await axios.get( talentAssetURL );
     return response.data;
@@ -101,7 +100,7 @@ export async function getAllTalentAssets(id) {
   }
 }
 
-export async function getAllProjectsAssets(id) {
+export async function getAllProjectsAssets() {
   try {
     const response = await axios.get( projectsAssetURL );
     return response.data;
@@ -110,13 +109,23 @@ export async function getAllProjectsAssets(id) {
   }
 }
 
-export async function getAllBusinessAssets(id) {
+export async function getAllBusinessAssets() {
   try {
     const response = await axios.get( businessAssetURL );
     return response.data;
   } catch (error) {
     console.error(error);
   }
+}
+
+export async function getAllAssets() {
+  var assets = await getAllApplicationAssets()
+  assets = assets.concat(await getAllDataAssets())
+  assets = assets.concat(await getAllInfrastructureAssets())
+  assets = assets.concat(await getAllTalentAssets())
+  assets = assets.concat(await getAllProjectsAssets())
+  assets = assets.concat(await getAllBusinessAssets())
+  return assets
 }
 
 export async function getApplicationAssetChildrenById(id) {
