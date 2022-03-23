@@ -93,24 +93,48 @@ export default class Graph extends Component {
         return hierarchy;
     }
 
+    async getImplicitConnections(key, type) {
+        var connections = [];
+        var assets = await asset.getAllAssets()
+        assets.forEach(asset => {
+            if (asset[type + ' Connections'] && asset[type + ' Connections'].trim().length ) {
+                asset[type + ' Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
+                    if(conn == key) {
+                        connections.push(asset)
+                    }
+                });
+            }
+        });
+        return connections
+    }
+
+    // TODO get all assets with connection to asset
     async expandAsset(i,d) {
         var assetChildren = null;
         switch(d.data["Asset Type"]) {
-            case "Application": assetChildren = await asset.getApplicationAssetChildrenById(d.data["Application ID"]);
+            case "Application":
+                assetChildren = await asset.getApplicationAssetChildrenById(d.data["Application ID"]);
                 break;
-            case "Data":  assetChildren = await asset.getDataAssetChildrenById(d.data["Data ID"]);
+            case "Data":
+                assetChildren = await asset.getDataAssetChildrenById(d.data["Data ID"]);
                 break;
-            case "Infrastructure":  assetChildren = await asset.getInfrastructureAssetChildrenById(d.data["Infrastructure ID"]);
+            case "Infrastructure":
+                assetChildren = await asset.getInfrastructureAssetChildrenById(d.data["Infrastructure ID"]);
                 break;
-            case "Talent":  assetChildren = await asset.getTalentAssetChildrenById(d.data["Talent ID"]);
+            case "Talent":
+                assetChildren = await asset.getTalentAssetChildrenById(d.data["Talent ID"]);
                 break;
-            case "Projects":  assetChildren = await asset.getProjectsAssetChildrenById(d.data["Projects ID"]);
+            case "Projects":
+                assetChildren = await asset.getProjectsAssetChildrenById(d.data["Projects ID"]);
                 break;
-            case "Business":  assetChildren = await asset.getBusinessAssetChildrenById(d.data["Business ID"]);
+            case "Business":
+                assetChildren = await asset.getBusinessAssetChildrenById(d.data["Business ID"]);
                 break;
             default: return;
         }
+
         assetChildren = assetChildren.children;
+        assetChildren = assetChildren.concat(await this.getImplicitConnections(d.data[d.data["Asset Type"] + " ID"], d.data["Asset Type"]));
         if(assetChildren && assetChildren.length > 0) {
             var newHierarchy = this.addToHierarchy(d.data["index"], assetChildren, this.state.hierarchy);
             newHierarchy = this.createIndex(newHierarchy, 1);
@@ -118,7 +142,6 @@ export default class Graph extends Component {
             this.update(this.state.selectedCategory, this.state.selectedAssetKey);
         }
     }
-
 
     /* FOR FUTURE ADAPATION TO THE DATABASE:
      * 
@@ -138,83 +161,24 @@ export default class Graph extends Component {
         switch(this.state.selectedCategory) {
             case 'Application': 
                 hierarchy = await asset.getApplicationAssetChildrenById(this.state.selectedAssetKey);
-                var assets = await asset.getAllAssets()
-                assets.forEach(asset => {
-                    if (asset['Application Connections'] && asset['Application Connections'].trim().length ) {
-                       asset['Application Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
-                           if(conn == this.state.selectedAssetKey) {
-                               hierarchy.children.push(asset)
-                           }
-                       });
-                    }
-                });
                 break;
             case 'Data':
                 hierarchy = await asset.getDataAssetChildrenById(this.state.selectedAssetKey);
-                var assets = await asset.getAllAssets()
-                assets.forEach(asset => {
-                    if (asset['Data Connections'] && asset['Data Connections'].trim().length ) {
-                       asset['Data Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
-                           if(conn == this.state.selectedAssetKey) {
-                               hierarchy.children.push(asset)
-                           }
-                       });
-                    }
-                });
                 break;
             case 'Infrastructure':
                 hierarchy = await asset.getInfrastructureAssetChildrenById(this.state.selectedAssetKey);
-                var assets = await asset.getAllAssets()
-                assets.forEach(asset => {
-                    if (asset['Infrastructure Connections'] && asset['Infrastructure Connections'].trim().length ) {
-                       asset['Infrastructure Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
-                           if(conn == this.state.selectedAssetKey) {
-                               hierarchy.children.push(asset)
-                           }
-                       });
-                    }
-                });
                 break;
             case 'Talent':
                 hierarchy = await asset.getTalentAssetChildrenById(this.state.selectedAssetKey);
-                var assets = await asset.getAllAssets()
-                assets.forEach(asset => {
-                    if (asset['Talent Connections'] && asset['Talent Connections'].trim().length ) {
-                       asset['Talent Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
-                           if(conn == this.state.selectedAssetKey) {
-                               hierarchy.children.push(asset)
-                           }
-                       });
-                    }
-                });
                 break;
             case 'Projects':
                 hierarchy = await asset.getProjectsAssetChildrenById(this.state.selectedAssetKey);
-                var assets = await asset.getAllAssets()
-                assets.forEach(asset => {
-                    if (asset['Projects Connections'] && asset['Projects Connections'].trim().length ) {
-                       asset['Projects Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
-                           if(conn == this.state.selectedAssetKey) {
-                               hierarchy.children.push(asset)
-                           }
-                       });
-                    }
-                });
                 break;
             case 'Business':
                 hierarchy = await asset.getBusinessAssetChildrenById(this.state.selectedAssetKey);
-                var assets = await asset.getAllAssets()
-                assets.forEach(asset => {
-                    if (asset['Business Connections'] && asset['Business Connections'].trim().length ) {
-                       asset['Business Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).forEach(conn => {
-                           if(conn == this.state.selectedAssetKey) {
-                               hierarchy.children.push(asset)
-                           }
-                       });
-                    }
-                });
                 break;
         }
+        hierarchy.children = hierarchy.children.concat(await this.getImplicitConnections(this.state.selectedAssetKey, this.state.selectedCategory))
 
         hierarchy = this.createIndex(hierarchy,1);
         this.setState({hierarchy: hierarchy});
@@ -255,6 +219,8 @@ export default class Graph extends Component {
         if (asset['Business Connections'] && asset['Business Connections'].trim().length){
             childrenCount += asset['Business Connections'].split(';').map(item => parseInt(item.replace(/\D/g, ''))).length;
         }
+
+        childrenCount += this.getImplicitConnections(this.state.selectedAssetKey, this.state.selectedCategory).length;
         return childrenCount;
     }
 
@@ -309,7 +275,6 @@ export default class Graph extends Component {
 
     //checks if asset1 is the same as asset2 
     equal(asset1, asset2){
-        console.log(asset1["Asset Type"] +' ' + asset1["Infrastructure ID"]);
         switch(asset1["Asset Type"]) {
             case "Application": return asset1["Application ID"] === asset2["Application ID"];
             case "Data": return asset1["Data ID"] === asset2["Data ID"];
@@ -365,7 +330,6 @@ export default class Graph extends Component {
         console.log("CHILDREN FOUND:" + asset.data["Name"]);
         return true;
     }
-
 
     /* FOR FUTURE ADAPTION TO THE DATABASE:
      * 
