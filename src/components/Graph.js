@@ -479,9 +479,7 @@ export default class Graph extends Component {
                 .on("click", (i, d) => {
                     this.expandAsset(i, d);
                 });
-
-        
-        svg.append("g")
+        var nodeIcon = svg.append("g")
             .attr("class", "icons")
         .selectAll("icons")
             .data(root)
@@ -503,7 +501,48 @@ export default class Graph extends Component {
                     default: return;
                 }
             });
-       
+        //show info when hovering node circles and icons
+        this.showInfoOnHover([nodes, nodeIcon]);
+    }
+
+    showInfoOnHover(graphNode){
+        d3.selectAll("div.hoverInfo").remove().exit(); // remove old panel
+
+        const hoverInfo = d3.select(this.graphReference.current)
+            .append("div")
+            .attr("class", "hoverInfo")
+            .style("opacity", 0);
+        
+        const details = ["Name", "Connections", "Type", "Owner", "Vendor", "Language", "Software", "Business Function", "Comment"];
+        
+        graphNode.forEach(elem => {
+            elem.on('mouseover', (event, d) => {
+                const assetData = d.data;
+                const connections = this.countChildren(assetData);
+                const type = assetData["Asset Type"] === "Infrastructure" ? assetData["Long Type"] : assetData["Type"];
+                const detailText = hoverInfo.text("")
+                details.forEach(label => {
+                    let value = "";
+                    if(label === "Type") value = type;
+                    else if(label === "Connections") value = connections.toString();
+                    else value = assetData[label];
+                    if(!value) return;
+                    detailText.append("text").text(label + ": ")
+                        .append("text").style("font-weight", "bold").text(value).append("br");
+                })
+                
+                hoverInfo.style("left", (event.x + 10) + "px")
+                    .style("top", (event.y + 10) + "px");
+    
+                hoverInfo.transition()
+                    .duration(50)
+                    .style("opacity", 1);
+            }).on('mouseout',  (i, d) => {
+                hoverInfo.transition()
+                    .duration(50)
+                    .style("opacity", 0);
+            });
+        });
     }
 
     render() {
