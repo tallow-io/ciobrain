@@ -501,47 +501,47 @@ export default class Graph extends Component {
                     default: return;
                 }
             });
+
         //show info when hovering node circles and icons
         this.showInfoOnHover([nodes, nodeIcon]);
     }
 
-    showInfoOnHover(graphNode){
+    showInfoOnHover(graphNode) {
         d3.selectAll("div.hoverInfo").remove().exit(); // remove old panel
 
         const hoverInfo = d3.select(this.graphReference.current)
             .append("div")
             .attr("class", "hoverInfo")
             .style("opacity", 0);
-        
+
         const details = ["Name", "Connections", "Type", "Owner", "Vendor", "Language", "Software", "Business Function", "Comment"];
-        
+
         graphNode.forEach(elem => {
             elem.on('mouseover', (event, d) => {
                 const assetData = d.data;
-                const connections = this.countChildren(assetData);
+                const connections = this.countChildren(assetData).toString();
                 const type = assetData["Asset Type"] === "Infrastructure" ? assetData["Long Type"] : assetData["Type"];
                 const detailText = hoverInfo.text("")
+
                 details.forEach(label => {
-                    let value = "";
-                    if(label === "Type") value = type;
-                    else if(label === "Connections") value = connections.toString();
-                    else value = assetData[label];
-                    if(!value) return;
+                    const value = label === "Type" ? type : label === "Connections" ? connections : assetData[label];
+                    if (!value) return;
                     detailText.append("text").text(label + ": ")
-                        .append("text").style("font-weight", "bold").text(value).append("br");
+                        .append("text").style("font-weight", "bold").text(value)
+                        .append("br");
                 })
-                
-                hoverInfo.style("left", (event.x + 10) + "px")
-                    .style("top", (event.y + 10) + "px");
-    
-                hoverInfo.transition()
-                    .duration(50)
-                    .style("opacity", 1);
-            }).on('mouseout',  (i, d) => {
-                hoverInfo.transition()
-                    .duration(50)
-                    .style("opacity", 0);
-            });
+
+                const posX = event.x
+                const posY = event.y
+                const panelWidth = hoverInfo.node().getBoundingClientRect().width;
+                const panelHeight = hoverInfo.node().getBoundingClientRect().height;
+                const infoX = posX >= (window.innerWidth * 0.85) ? posX - panelWidth - 10 : posX + 10;
+                const infoY = posY >= (window.innerHeight * 0.85) ? posY - panelHeight - 10 : posY + 10;
+
+                hoverInfo.style("left", infoX + "px").style("top", infoY + "px");
+                hoverInfo.transition().duration(250).style("opacity", 1);
+
+            }).on('mouseout', () => hoverInfo.transition().duration(250).style("opacity", 0));
         });
     }
 
