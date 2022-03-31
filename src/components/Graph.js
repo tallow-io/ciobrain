@@ -8,7 +8,6 @@ import dataIcon from '../images/dataIcon.png'
 import infrastructureIcon from '../images/infrastructureIcon.png'
 import * as ERRORLOG from '../common/ErrorLog'
 
-
 export default class Graph extends Component {
     constructor (props){
         super(props);
@@ -19,7 +18,8 @@ export default class Graph extends Component {
             width: null,
             height: null,
             resizeTimeout: null,
-            hierarchy: null
+            hierarchy: null,
+            nextIndex: 1
         }
         this.addToHierarchy.bind(this);
     }
@@ -108,7 +108,6 @@ export default class Graph extends Component {
         return connections
     }
 
-    // TODO get all assets with connection to asset
     async expandAsset(i,d) {
         var assetChildren = null;
         switch(d.data["Asset Type"]) {
@@ -133,11 +132,31 @@ export default class Graph extends Component {
             default: return;
         }
 
-        assetChildren = assetChildren.children;
-        assetChildren = assetChildren.concat(await this.getImplicitConnections(d.data[d.data["Asset Type"] + " ID"], d.data["Asset Type"]));
+        assetChildren = assetChildren.children
+        assetChildren = assetChildren.concat(await this.getImplicitConnections(d.data[d.data["Asset Type"] + " ID"], d.data["Asset Type"]))
+        let findResults = assetChildren.map(asset => {
+            return this.isInHierarchy(this.state.hierarchy, asset)
+        })
+        // these are new assets that are not yet in the graph
+        let unique = findResults.filter(result => {
+            return !result[0]
+        }).map(result => {
+            return result[1]
+        })
+        // these assets from assetChildren are replaced by references to the assets already in the graph
+        let duplicates = findResults.filter(result => {
+            return result[0]
+        }).map(result => {
+            return result[1]
+        })
+
+        console.log(assetChildren)
+        assetChildren = unique.concat(duplicates)
+        console.log(assetChildren)
+
         if(assetChildren && assetChildren.length > 0) {
             var newHierarchy = this.addToHierarchy(d.data["index"], assetChildren, this.state.hierarchy);
-            newHierarchy = this.createIndex(newHierarchy, 1);
+            newHierarchy = this.indexHierarchy(newHierarchy);
             this.setState({hierarchy: newHierarchy});  
             this.update(this.state.selectedCategory, this.state.selectedAssetKey);
         }
@@ -180,7 +199,7 @@ export default class Graph extends Component {
         }
         hierarchy.children = hierarchy.children.concat(await this.getImplicitConnections(this.state.selectedAssetKey, this.state.selectedCategory))
 
-        hierarchy = this.createIndex(hierarchy,1);
+        hierarchy = this.indexHierarchy(hierarchy);
         this.setState({hierarchy: hierarchy});
         var children = hierarchy['children'];
         if(!children || children == null || children.length == 0) {
@@ -189,12 +208,53 @@ export default class Graph extends Component {
         }
     }
 
+    // Check if an asset is already in the graph, and get a reference to it if it is,
+    // or a reference to asset if it isn't. The seen parameter is an object so changes to it
+    // will remain after returning.
+    isInHierarchy(hierarchy, asset, seen = {list: []}) {
+        if(seen.list.find(asset => {
+            return this.equal(hierarchy, asset)
+        })) {
+            console.log("already seen " + hierarchy["Name"])
+            return [true, hierarchy]
+        }
+        // base case
+        if (this.equal(hierarchy, asset)) {
+            return [true, hierarchy]
+        }
+
+        // console.log("checking " + hierarchy["Name"])
+        seen.list = seen.list.concat(hierarchy)
+        // console.log("seen assets")
+        console.log(seen.list.map(asset => {
+            return asset["Name"]
+        }))
+
+        // this is a leaf node, no children to check
+        if (!("children" in hierarchy)) {
+            return [false, asset]
+        }
+        // recursive case, may be in one of root's children subtrees
+        for (let connection of hierarchy["children"]) {
+            let [exists, existingAsset] = this.isInHierarchy(connection, asset, seen)
+            if (exists) {
+                return [true, existingAsset]
+            }
+        }
+
+        // not found in any subtrees
+        return [false, asset]
+    }
+
     //Create indexes for asset nodes depth-first to allow for a binary search
-    createIndex(hierarchy, index) {
-        hierarchy['index'] = index; 
+    indexHierarchy(hierarchy) {
+        if (!("index" in hierarchy)) {
+            hierarchy["index"] = this.state.nextIndex;
+            this.state.nextIndex++
+        }
         var children = hierarchy['children'];
         if(children && children !== null) {
-            hierarchy['children'] = children.map(item => this.createIndex(item, ++index));
+            hierarchy['children'] = children.map(item => this.indexHierarchy(item));
         }
         return hierarchy;
     }
@@ -299,19 +359,18 @@ export default class Graph extends Component {
      *      asset's only children is its parent - parent connection already displayed, no other valid children need to be displayed
     */
     checkForUndisplayedChildren(asset){
+        // TODO change this to get all connections to asset and check if any of them are not yet in the graph
 
         let childrenCount = this.countChildren(asset.data);
 
         if(childrenCount === 0){
             //no children were found
-            console.log("NO CHILD:" + asset.data["Name"]);
             return false;
         }
 
         let parent = asset.parent;
         if(childrenCount === 1  && this.findInChildren(parent.data, asset.data)) {
             //only child is its parent
-            console.log("PARENT CHILD:" + asset.data["Name"]);
             return false;
         }
 
@@ -322,12 +381,10 @@ export default class Graph extends Component {
         }
         if(grandparent && typeof grandparent !== 'undefined')
         {
-            console.log("GRANDPARENT:" + asset.data["Name"]);
             //asset was found to be a grandparent node
             return false;
         }
 
-        console.log("CHILDREN FOUND:" + asset.data["Name"]);
         return true;
     }
 
