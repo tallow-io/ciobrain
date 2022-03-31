@@ -1,12 +1,12 @@
 :root {
   --red:#D12626; /* Application */
-  --green: #26BD93; /* Data */
+  --green: #20a781; /* Data */
   --blue: #2324C9; /* Infrastructure */
   --yellow: #e68c05f1; /* People */
   --purple: #7e2cb4; /* Projects */
   --gray: #696969; /* Business */
   --opaque-red: rgba(232, 26, 26, 0.1);
-  --opaque-green: rgba(38, 189, 147, 0.1);
+  --opaque-green: rgba(36, 179, 138, 0.1);
   --opaque-blue: rgba(35, 36, 201, 0.1);
   --opaque-yellow: rgba(223, 146, 30, 0.1);
   --opaque-purple: rgba(98, 35, 181, 0.1);
