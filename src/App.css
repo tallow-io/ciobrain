@@ -2,13 +2,13 @@
   --red:#D12626; /* Application */
   --green: #26BD93; /* Data */
   --blue: #2324C9; /* Infrastructure */
-  --yellow: #F5C228; /* People */
-  --purple: #6223B5; /* Projects */
+  --yellow: #e68c05f1; /* People */
+  --purple: #7e2cb4; /* Projects */
   --gray: #696969; /* Business */
   --opaque-red: rgba(232, 26, 26, 0.1);
   --opaque-green: rgba(38, 189, 147, 0.1);
   --opaque-blue: rgba(35, 36, 201, 0.1);
-  --opaque-yellow: rgba(245, 194, 40, 0.1);
+  --opaque-yellow: rgba(223, 146, 30, 0.1);
   --opaque-purple: rgba(98, 35, 181, 0.1);
   --opaque-gray: rgba(105, 105, 105, 0.1);
 }
