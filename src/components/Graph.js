@@ -6,6 +6,9 @@ import { AssetCategoryEnum } from './AssetCategoryEnum';
 import appIcon from '../images/appIcon.png'
 import dataIcon from '../images/dataIcon.png'
 import infrastructureIcon from '../images/infrastructureIcon.png'
+import talentIcon from '../images/talentIcon.png'
+import projectIcon from '../images/projectIcon.png'
+import businessIcon from '../images/businessIcon.png'
 import * as ERRORLOG from '../common/ErrorLog'
 
 
@@ -496,10 +499,10 @@ export default class Graph extends Component {
                     case "Application": return appIcon;
                     case "Data":  return dataIcon;
                     case "Infrastructure":  return infrastructureIcon;
-                    //Placeholder icons for Talent, Projects, and Business
-                    case "Talent":  return infrastructureIcon;
-                    case "Projects":  return infrastructureIcon;
-                    case "Business":  return infrastructureIcon;
+                    //Updated icons for Talent, Projects, and Business!
+                    case "Talent":  return talentIcon;
+                    case "Projects":  return projectIcon;
+                    case "Business":  return businessIcon;
                     default: return;
                 }
             });
