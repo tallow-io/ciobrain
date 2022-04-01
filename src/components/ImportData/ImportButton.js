@@ -5,18 +5,23 @@ import './ImportButton.css'
 import {AssetCategoryEnum} from "../AssetCategoryEnum.js";
 import ImportMenuOption from "./ImportMenuOption.js";
 
-export const ImportButton = () => (
-    <Popup
+const menuStyle = {
+    width: "200px",
+    display: "flex",
+    flexDirection: "column",
+    background: "#ffffff",
+    padding: "0px",
+    border: "1px solid #D6D6D6",
+    boxShadow: "0 4px 4px rgba(0, 0, 0, 0.25)",
+    borderRadius: "10px"
+}
+
+export const ImportButton = () => (<Popup
         trigger={<button className="button">Import</button>}
         position="right top"
         on="hover"
-        contentStyle={{ padding: "0px", border: "none" }}
+        contentStyle={menuStyle}
         nested
     >
-        <div className="menu">
-            {Object.values(AssetCategoryEnum).map(category =>
-                <ImportMenuOption category={category} />
-            )}
-        </div>
-    </Popup>
-);
+        {Object.values(AssetCategoryEnum).map(category => <ImportMenuOption category={category}/>)}
+    </Popup>);
