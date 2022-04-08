@@ -29,7 +29,8 @@ export default class Graph extends Component {
             this.setState({ selectedCategory: nextProps.selectedCategory, selectedAssetKey: nextProps.selectedAssetKey}, async () => {
                 if(nextProps.selectedCategory && nextProps.selectedAssetKey) {
                     await this.initHierarchy();
-                    this.update(nextProps.selectedCategory, nextProps.selectedAssetKey);
+                    // this.update(nextProps.selectedCategory, nextProps.selectedAssetKey);
+                    this.updateForce()
                 }
             });
         }
@@ -55,7 +56,8 @@ export default class Graph extends Component {
 
     updateDimensions() {
         this.setState({width: window.innerWidth, height: window.innerHeight});
-        this.update(this.state.selectedCategory, this.state.selectedAssetKey);
+        // this.update(this.state.selectedCategory, this.state.selectedAssetKey);
+        this.updateForce()
     }
 
     clearGraph() {
@@ -150,15 +152,14 @@ export default class Graph extends Component {
             return result[1]
         })
 
-        console.log(assetChildren)
         assetChildren = unique.concat(duplicates)
-        console.log(assetChildren)
 
         if(assetChildren && assetChildren.length > 0) {
             var newHierarchy = this.addToHierarchy(d.data["index"], assetChildren, this.state.hierarchy);
             newHierarchy = this.indexHierarchy(newHierarchy);
             this.setState({hierarchy: newHierarchy});  
-            this.update(this.state.selectedCategory, this.state.selectedAssetKey);
+            // this.update(this.state.selectedCategory, this.state.selectedAssetKey);
+            this.updateForce()
         }
     }
 
@@ -215,7 +216,6 @@ export default class Graph extends Component {
         if(seen.list.find(asset => {
             return this.equal(hierarchy, asset)
         })) {
-            console.log("already seen " + hierarchy["Name"])
             return [true, hierarchy]
         }
         // base case
@@ -223,12 +223,7 @@ export default class Graph extends Component {
             return [true, hierarchy]
         }
 
-        // console.log("checking " + hierarchy["Name"])
         seen.list = seen.list.concat(hierarchy)
-        // console.log("seen assets")
-        console.log(seen.list.map(asset => {
-            return asset["Name"]
-        }))
 
         // this is a leaf node, no children to check
         if (!("children" in hierarchy)) {
@@ -588,6 +583,165 @@ export default class Graph extends Component {
        
     }
 
+    async updateForce() {
+        this.clearGraph();
+
+        var container = d3.select(this.graphReference.current);
+        var width = this.state.width - 500;
+        var height = this.state.height - 50;
+
+        var svg = container
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+                .attr("transform", "translate(50,50)");
+
+        var data = {
+            nodes: [
+                asset.getBusinessAssetById(1),
+                asset.getBusinessAssetById(3),
+                asset.getDataAssetById(1),
+                asset.getDataAssetById(2),
+                asset.getApplicationAssetById(1),
+                asset.getApplicationAssetById(2),
+                asset.getTalentAssetById(1),
+                asset.getTalentAssetById(2),
+                asset.getTalentAssetById(5)
+            ],
+            links: [
+                {source: "B-1", target: "D-1", value: 1},
+                {source: "B-1", target: "D-2", value: 1},
+                {source: "D-1", target: "A-1", value: 1},
+                {source: "D-1", target: "A-2", value: 1},
+                {source: "D-1", target: "T-1", value: 1},
+                {source: "D-1", target: "T-2", value: 1},
+                {source: "D-1", target: "T-5", value: 1},
+                {source: "D-2", target: "B-3", value: 1},
+                {source: "D-2", target: "A-2", value: 1},
+                {source: "D-2", target: "T-2", value: 1}
+            ]
+        }
+        data.nodes = await Promise.all(data.nodes)
+
+        for (const [index, node] of data.nodes.entries()) {
+            node["group"] = index + 1
+
+            if (node["Application ID"]) {
+                node["id"] = "A-" + node["Application ID"]
+            } else if (node["Data ID"]) {
+                node["id"] = "D-" + node["Data ID"]
+            } else if (node["Infrastructure ID"]) {
+                node["id"] = "I-" + node["Infrastructure ID"]
+            } else if (node["Talent ID"]) {
+                node["id"] = "T-" + node["Talent ID"]
+            } else if (node["Projects ID"]) {
+                node["id"] = "P-" + node["Projects ID"]
+            } else if (node["Business ID"]) {
+                node["id"] = "B-" + node["Business ID"]
+            }
+        }
+
+        // Initialize the links
+        var link = svg
+            .selectAll("line")
+            .data(data.links)
+            .enter()
+            .append("line")
+            .style("stroke", "#aaa")
+
+        // Initialize the nodes
+        var node = svg
+            .selectAll("circle")
+            .data(data.nodes)
+            .enter()
+            .append("circle")
+            .attr("r", 20)
+            .style("fill", function(d){
+                var assetType = Object.values(AssetCategoryEnum).filter( category => d["Asset Type"] === category.name )[0];
+                return assetType.color;
+            })
+            .attr("stroke", function(d){
+                var assetType = Object.values(AssetCategoryEnum).filter( category => d["Asset Type"] === category.name )[0];
+                return assetType.color;
+            })
+            .style("stroke-width", 2)
+
+        //Container for the gradients
+        var defs = svg.append("defs");
+
+        //Apply filter for the outside glow on graph nodes
+        var filter = defs.append("filter")
+            .attr("id","glow");
+        filter.append("feGaussianBlur")
+            .attr("stdDeviation","2")
+            .attr("result","coloredBlur");
+
+        var feMerge = filter.append("feMerge");
+        feMerge.append("feMergeNode")
+            .attr("in","coloredBlur");
+        feMerge.append("feMergeNode")
+            .attr("in","SourceGraphic");
+
+        svg.selectAll("circle")
+            .style("filter", "url(#glow)");
+
+        // Let's list the force we wanna apply on the network
+        var simulation = d3.forceSimulation(data.nodes)                 // Force algorithm is applied to data.nodes
+            .force("link", d3.forceLink()                               // This force provides links between nodes
+                    .id(function(d) { return d["id"]; })                     // This provide  the id of a node
+                    .links(data.links)                                    // and this the list of links
+            )
+            .force("charge", d3.forceManyBody().strength(-1000))         // This adds repulsion between nodes. Play with the -400 for the repulsion strength
+            .force("center", d3.forceCenter(width / 2, height / 2))     // This force attracts nodes to the center of the svg area
+            .on("end", ticked)
+
+        function ticked() {
+            link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node
+                .attr("cx", function (d) { return d.x+6; })
+                .attr("cy", function(d) { return d.y-6; });
+
+            svg.append("g")
+                    .attr("class", "labels")
+                .selectAll("text")
+                    .data(data.nodes)
+                .enter().append("text")
+                    .attr("transform", function(d) {
+                        return "translate(" + (d.y) + "," + (d.x) + ")"
+                    })
+                .text(function(d) { return d['Name'] });
+
+            svg.append("g")
+                .attr("class", "icons")
+            .selectAll("icons")
+                .data(data.nodes)
+            .enter().append('svg:image')
+                .attr("transform", function(d) {
+                    return "translate(" + (d.y) + "," + (d.x) + ")"
+                })
+                .attr('width', 18)
+                .attr('height', 22)
+                .attr("xlink:href",  function(d) {
+                    switch(d["Asset Type"]) {
+                        case "Application": return appIcon;
+                        case "Data":  return dataIcon;
+                        case "Infrastructure":  return infrastructureIcon;
+                        //Placeholder icons for Talent, Projects, and Business
+                        case "Talent":  return infrastructureIcon;
+                        case "Projects":  return infrastructureIcon;
+                        case "Business":  return infrastructureIcon;
+                        default: return;
+                    }
+                });
+        }
+    }
+
     render() {
         return (
             // <div className="graph" ref={this.graphReference} style={{ backgroundColor: "var(--green)" }}>
@@ -596,6 +750,4 @@ export default class Graph extends Component {
             </div>
         );
     }
-
 } 
-    
