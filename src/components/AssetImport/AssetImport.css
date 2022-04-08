@@ -1,0 +1,111 @@
+button {
+    width: 80px;
+    height: 30px;
+    border-radius: 10px;
+    margin: 15px 10px 0 0;
+}
+
+#assetMenuHeader > button {
+    background-color: var(--blue);
+    border: 1px solid var(--blue);
+    color: white;
+}
+
+#assetMenuHeader > button:hover {
+    background-color: var(--gray);
+    border: 1px solid var(--gray);
+}
+
+#assetMenuHeader > button:active {
+    background-color: lightgray;
+    border: 1px solid lightgray;
+    color: gray;
+}
+
+.closebtn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 18px;
+    line-height: 18px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.closebtn:hover {
+    color: black;
+}
+
+.modal {
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+}
+
+.modal > .header {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 25px;
+    line-height: 25px;
+    vertical-align: middle;
+    border-bottom: 2px solid var(--blue);
+    text-align: center;
+    padding: 10px;
+    background-image: -webkit-radial-gradient(50% 50%, #742AD5, #2527E4, #02CA92);
+    color: transparent;
+    -webkit-background-clip: text;
+}
+
+.modal > .actions {
+    margin: auto;
+}
+
+.modal > .actions {
+    width: 100%;
+    padding: 10px 5px;
+    text-align: center;
+}
+
+.modal > .close {
+    cursor: pointer;
+    position: absolute;
+    display: block;
+    padding: 2px 5px;
+    line-height: 20px;
+    right: -10px;
+    top: -10px;
+    font-size: 24px;
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #cfcece;
+}
+
+.menu-item {
+    cursor: pointer;
+    padding: 5px;
+    height: 28px;
+}
+
+.menu-item:hover {
+    background: #c8c8c8;
+    border-radius: 6px;
+}
+
+.content > form > * {
+    margin: 5px;
+}
+
+.loadButton {
+    margin: auto;
+    width: 80px;
+    height: 30px;
+    border-radius: 10px;
+    background-color: var(--blue);
+    border: 1px solid var(--blue);
+    color: white;
+}
+
+.loadButton:hover {
+    background-color: var(--gray);
+    border: 1px solid var(--gray);
+}
