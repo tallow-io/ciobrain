@@ -30,7 +30,7 @@ export default class Graph extends Component {
                 if(nextProps.selectedCategory && nextProps.selectedAssetKey) {
                     await this.initHierarchy();
                     // this.update(nextProps.selectedCategory, nextProps.selectedAssetKey);
-                    this.updateForce()
+                    this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
                 }
             });
         }
@@ -57,7 +57,7 @@ export default class Graph extends Component {
     updateDimensions() {
         this.setState({width: window.innerWidth, height: window.innerHeight});
         // this.update(this.state.selectedCategory, this.state.selectedAssetKey);
-        this.updateForce()
+        this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
     }
 
     clearGraph() {
@@ -159,7 +159,7 @@ export default class Graph extends Component {
             newHierarchy = this.indexHierarchy(newHierarchy);
             this.setState({hierarchy: newHierarchy});  
             // this.update(this.state.selectedCategory, this.state.selectedAssetKey);
-            this.updateForce()
+            this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
         }
     }
 
@@ -583,12 +583,14 @@ export default class Graph extends Component {
        
     }
 
-    async updateForce() {
+    async updateForce(selectedCategory, selectedAssetKey) {
         this.clearGraph();
 
         const container = d3.select(this.graphReference.current);
         const width = this.state.width - 500;
         const height = this.state.height - 50;
+
+        const matchAsset = function(d, ifMatch, otherwise) { if(d[selectedCategory + " ID"] && d[selectedCategory + " ID"] == selectedAssetKey) { return ifMatch } else { return otherwise } }
 
         const svg = container
             .append("svg")
@@ -622,6 +624,16 @@ export default class Graph extends Component {
                 {source: "D-2", target: "T-2", value: 1}
             ]
         }
+
+        data.nodes[0]["connections"] = 2;
+        data.nodes[1]["connections"] = 1;
+        data.nodes[2]["connections"] = 6;
+        data.nodes[3]["connections"] = 4;
+        data.nodes[4]["connections"] = 1;
+        data.nodes[5]["connections"] = 2;
+        data.nodes[6]["connections"] = 1;
+        data.nodes[7]["connections"] = 2;
+        data.nodes[8]["connections"] = 1;
 
         data.nodes.forEach((node, index) => {
             node["group"] = index + 1
@@ -666,7 +678,7 @@ export default class Graph extends Component {
         const assetTypes = Object.values(AssetCategoryEnum);
 
         node.append("circle")
-            .attr("r", 20)
+            .attr("r", d => matchAsset(d, 22, 20) + (d["connections"] - 1) * 2)
             .style("fill", d => assetTypes.find(type => d["Asset Type"] === type.name).color)
             .attr("stroke", d => assetTypes.find(type => d["Asset Type"] === type.name).color)
             .style("stroke-width", 2);
@@ -691,34 +703,49 @@ export default class Graph extends Component {
                         return;
                 }
             })
-            .attr("x", -10)
-            .attr("y", -10)
-            .attr("width", 20)
-            .attr("height", 20);
+            .attr("x", d => -10 - (d["connections"] - 1))
+            .attr("y", d => -10 - (d["connections"] - 1))
+            .attr("width", d => 20 + (d["connections"] - 1) * 2)
+            .attr("height", d => 20 + (d["connections"] - 1) * 2);
 
         node.append("text")
             .style("text-anchor", "middle")
-            .attr("y", 40)
+            .attr("y", d => 40 + (d["connections"] - 1))
+            // .attr("font-weight", d => matchAsset(d, "bold", "normal"))
+            .attr("text-decoration", d => matchAsset(d, "underline", "none"))
             .text(d => d["Name"]);
 
         //Container for the gradients
         const defs = svg.append("defs");
 
-        //Apply filter for the outside glow on graph nodes
-        const filter = defs.append("filter")
-            .attr("id", "glow");
-        filter.append("feGaussianBlur")
+        // filter for the glow around non-selected nodes
+        const normalFilter = defs.append("filter")
+            .attr("id", "normalGlow");
+        normalFilter.append("feGaussianBlur")
             .attr("stdDeviation", "2")
             .attr("result", "coloredBlur");
 
-        const feMerge = filter.append("feMerge");
+        const feMerge = normalFilter.append("feMerge");
         feMerge.append("feMergeNode")
             .attr("in", "coloredBlur");
         feMerge.append("feMergeNode")
             .attr("in", "SourceGraphic");
 
+        // filter for the glow around selected nodes
+        const selectedFilter = defs.append("filter")
+            .attr("id", "selectedGlow");
+        selectedFilter.append("feGaussianBlur")
+            .attr("stdDeviation", "2.1")
+            .attr("result", "coloredBlur");
+
+        const selectedFeMerge = normalFilter.append("feMerge");
+        selectedFeMerge.append("feMergeNode")
+            .attr("in", "coloredBlur");
+        selectedFeMerge.append("feMergeNode")
+            .attr("in", "SourceGraphic");
+
         svg.selectAll("circle")
-            .style("filter", "url(#glow)");
+            .style("filter", d => matchAsset(d, "url(#selectedGlow)", "url(#normalGlow)"));
 
         // Let's list the force we wanna apply on the network
         const simulation = d3.forceSimulation(data.nodes)              // Force algorithm is applied to data.nodes
