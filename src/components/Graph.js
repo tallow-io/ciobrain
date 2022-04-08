@@ -590,7 +590,7 @@ export default class Graph extends Component {
         const width = this.state.width - 500;
         const height = this.state.height - 50;
 
-        const matchAsset = function(d, ifMatch, otherwise) { if(d[selectedCategory + " ID"] && d[selectedCategory + " ID"] == selectedAssetKey) { return ifMatch } else { return otherwise } }
+        const matchAsset = (d, ifMatch, otherwise) => { if(d[selectedCategory + " ID"] && d[selectedCategory + " ID"] == selectedAssetKey) { return ifMatch } else { return otherwise } }
 
         const svg = container
             .append("svg")
@@ -711,7 +711,8 @@ export default class Graph extends Component {
         node.append("text")
             .style("text-anchor", "middle")
             .attr("y", d => 40 + (d["connections"] - 1))
-            // .attr("font-weight", d => matchAsset(d, "bold", "normal"))
+            .attr("font-weight", d => matchAsset(d, "bold", "normal"))
+            .attr("font-size", d => matchAsset(d, "large", "medium"))
             .attr("text-decoration", d => matchAsset(d, "underline", "none"))
             .text(d => d["Name"]);
 
@@ -722,27 +723,27 @@ export default class Graph extends Component {
         const normalFilter = defs.append("filter")
             .attr("id", "normalGlow");
         normalFilter.append("feGaussianBlur")
-            .attr("stdDeviation", "2")
+            .attr("stdDeviation", "1.5")
             .attr("result", "coloredBlur");
 
-        const feMerge = normalFilter.append("feMerge");
-        feMerge.append("feMergeNode")
-            .attr("in", "coloredBlur");
-        feMerge.append("feMergeNode")
-            .attr("in", "SourceGraphic");
+        // const feMerge = normalFilter.append("feMerge");
+        // feMerge.append("feMergeNode")
+        //     .attr("in", "coloredBlur");
+        // feMerge.append("feMergeNode")
+        //     .attr("in", "SourceGraphic");
 
         // filter for the glow around selected nodes
         const selectedFilter = defs.append("filter")
             .attr("id", "selectedGlow");
         selectedFilter.append("feGaussianBlur")
-            .attr("stdDeviation", "2.1")
+            .attr("stdDeviation", "2.5")
             .attr("result", "coloredBlur");
 
-        const selectedFeMerge = normalFilter.append("feMerge");
-        selectedFeMerge.append("feMergeNode")
-            .attr("in", "coloredBlur");
-        selectedFeMerge.append("feMergeNode")
-            .attr("in", "SourceGraphic");
+        // const selectedFeMerge = normalFilter.append("feMerge");
+        // selectedFeMerge.append("feMergeNode")
+        //     .attr("in", "coloredBlur");
+        // selectedFeMerge.append("feMergeNode")
+        //     .attr("in", "SourceGraphic");
 
         svg.selectAll("circle")
             .style("filter", d => matchAsset(d, "url(#selectedGlow)", "url(#normalGlow)"));
