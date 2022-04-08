@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import Popup from "reactjs-popup";
 import {AssetCategoryEnum} from "../AssetCategoryEnum.js";
-import './ImportButton.css'
+import './AssetImport.css'
 import 'reactjs-popup/dist/index.css';
 import XLSX from "xlsx";
 import * as ASSET from "../../common/Asset.js";
@@ -18,7 +18,7 @@ const formStyle = {display: "flex", flexDirection: "row", padding: "10px", justi
 
 const INVALID_FILE = {};
 
-export default class ImportButton extends Component {
+export default class AssetImport extends Component {
 
     constructor(props) {
         super(props);

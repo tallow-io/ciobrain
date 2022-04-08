@@ -28,13 +28,6 @@ box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 border-radius: 10px;
 }
 
-button {
-  width: 80px;
-  height: 30px;
-  border-radius: 10px;
-  margin: 15px 10px 0 0;
-}
-
 #assetMenu{
   font-family: 'Roboto', sans-serif;;
   font-style: normal;
@@ -52,12 +45,6 @@ button {
   font-size: 20px;
   font-weight: bold;
   line-height: 28px;
-}
-
-#assetMenuHeader > button{
-  background-color: var(--blue);
-  border: 1px solid var(--blue);
-  color: white;
 }
 
 #assetDetailHeader{
@@ -110,18 +97,3 @@ button {
 }
 
 .alert.info {background-color: var(--blue);}
-
-.closebtn {
-  margin-left: 15px;
-  color: white;
-  font-weight: bold;
-  float: right;
-  font-size: 18px;
-  line-height: 18px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.closebtn:hover {
-  color: black;
-}

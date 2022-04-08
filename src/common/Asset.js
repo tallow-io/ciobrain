@@ -9,6 +9,60 @@ let talentAssetURL = URL + '/talent'
 let projectsAssetURL = URL + '/projects'
 let businessAssetURL = URL + '/business'
 
+export async function postApplicationAsset(asset) {
+  try {
+    const response = await axios.post(applicationAssetURL, asset);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function postDataAsset(asset){
+  try {
+    const response = await axios.post(dataAssetURL, asset);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function postInfrastructureAsset(asset){
+  try {
+    const response = await axios.post(infrastructureAssetURL, asset);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function postTalentAsset(asset){
+  try {
+    const response = await axios.post(talentAssetURL, asset);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function postProjectsAsset(asset){
+  try {
+    const response = await axios.post(projectsAssetURL, asset);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function postBusinessAsset(asset){
+  try {
+    const response = await axios.post(businessAssetURL, asset);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 export async function getApplicationAssetById(id) {
   try {
     const response = await axios.get( applicationAssetURL + '/' + id);
@@ -81,7 +135,6 @@ export async function getAllDataAssets(id) {
     console.error(error);
   }
 }
-
 
 export async function getAllInfrastructureAssets(id) {
   try {
