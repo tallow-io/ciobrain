@@ -7,6 +7,7 @@ import appIcon from '../images/appIcon.png'
 import dataIcon from '../images/dataIcon.png'
 import infrastructureIcon from '../images/infrastructureIcon.png'
 import * as ERRORLOG from '../common/ErrorLog'
+import { tickStep } from 'd3';
 
 export default class Graph extends Component {
     constructor (props){
@@ -19,7 +20,11 @@ export default class Graph extends Component {
             height: null,
             resizeTimeout: null,
             hierarchy: null,
-            nextIndex: 1
+            nextIndex: 1,
+            // data to display
+            data: null,
+            // assets that are related to those on the graph but not yet drawn
+            undisplayed: []
         }
         this.addToHierarchy.bind(this);
     }
@@ -29,7 +34,7 @@ export default class Graph extends Component {
             this.setState({ selectedCategory: nextProps.selectedCategory, selectedAssetKey: nextProps.selectedAssetKey}, async () => {
                 if(nextProps.selectedCategory && nextProps.selectedAssetKey) {
                     await this.initHierarchy();
-                    // this.update(nextProps.selectedCategory, nextProps.selectedAssetKey);
+                    await this.initData();
                     this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
                 }
             });
@@ -56,7 +61,6 @@ export default class Graph extends Component {
 
     updateDimensions() {
         this.setState({width: window.innerWidth, height: window.innerHeight});
-        // this.update(this.state.selectedCategory, this.state.selectedAssetKey);
         this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
     }
 
@@ -158,9 +162,12 @@ export default class Graph extends Component {
             var newHierarchy = this.addToHierarchy(d.data["index"], assetChildren, this.state.hierarchy);
             newHierarchy = this.indexHierarchy(newHierarchy);
             this.setState({hierarchy: newHierarchy});  
-            // this.update(this.state.selectedCategory, this.state.selectedAssetKey);
             this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
         }
+    }
+
+    async expandAssetForce(i,d) {
+        //
     }
 
     /* FOR FUTURE ADAPATION TO THE DATABASE:
@@ -177,6 +184,7 @@ export default class Graph extends Component {
      *      }
      */
     async initHierarchy() {
+        // TODO remove when done with new graph
         var hierarchy = {};
         switch(this.state.selectedCategory) {
             case 'Application': 
@@ -207,6 +215,152 @@ export default class Graph extends Component {
             ERRORLOG.log("Selected " + this.state.selectedCategory.toLowerCase() + " asset \"" + hierarchy["Name"].trim() + "\" has no connections ",
             "Asset's hierarchy data: " + JSON.stringify(this.state.hierarchy));
         }
+    }
+
+    async initData() {
+        var nodes = await this.initNodes()
+        var links = await this.initLinks(nodes)
+        this.setState({data: { nodes: nodes, links: links }})
+
+        console.log(this.state.data)
+        console.log(this.state.undisplayed)
+    }
+
+    async initNodes() {
+        var origin;
+        var nodes = [];
+        switch(this.state.selectedCategory) {
+            case 'Application': 
+                origin = await asset.getApplicationAssetById(this.state.selectedAssetKey)
+                nodes.push(origin)
+                nodes = nodes.concat((await asset.getApplicationAssetChildrenById(this.state.selectedAssetKey)).children);
+                break;
+            case 'Data':
+                origin = await asset.getDataAssetById(this.state.selectedAssetKey)
+                nodes.push(origin)
+                nodes = nodes.concat((await asset.getDataAssetChildrenById(this.state.selectedAssetKey)).children);
+                break;
+            case 'Infrastructure':
+                origin = await asset.getInfrastructureAssetById(this.state.selectedAssetKey)
+                nodes.push(origin)
+                nodes = nodes.concat((await asset.getInfrastructureAssetChildrenById(this.state.selectedAssetKey)).children);
+                break;
+            case 'Talent':
+                origin = await asset.getTalentAssetById(this.state.selectedAssetKey)
+                nodes.push(origin)
+                nodes = nodes.concat((await asset.getTalentAssetChildrenById(this.state.selectedAssetKey)).children);
+                break;
+            case 'Projects':
+                origin = await asset.getProjectsAssetById(this.state.selectedAssetKey)
+                nodes.push(origin)
+                nodes = nodes.concat((await asset.getProjectsAssetChildrenById(this.state.selectedAssetKey)).children);
+                break;
+            case 'Business':
+                origin = await asset.getBusinessAssetById(this.state.selectedAssetKey)
+                nodes.push(origin)
+                nodes = nodes.concat((await asset.getBusinessAssetChildrenById(this.state.selectedAssetKey)).children);
+                break;
+        }
+        var implicit = await this.getImplicitConnections(this.state.selectedAssetKey, this.state.selectedCategory)
+        nodes = nodes.concat(implicit)
+        nodes.forEach(node => {
+            switch(node["Asset Type"]) {
+                case "Application":
+                    node["id"] = "A-" + node["Application ID"]
+                    break;
+                case "Data":
+                    node["id"] = "D-" + node["Data ID"]
+                    break;
+                case "Infrastructure":
+                    node["id"] = "I-" + node["Infrastructure ID"]
+                    break;
+                case "Talent":
+                    node["id"] = "T-" + node["Talent ID"]
+                    break;
+                case "Projects":
+                    node["id"] = "P-" + node["Projects ID"]
+                    break;
+                case "Business":
+                    node["id"] = "B-" + node["Business ID"]
+                    break;
+            }
+            // used to determine size of the node when drawing it
+            node["connections"] = 0
+        })
+        this.tagNodes(nodes)
+
+        return nodes
+    }
+
+    // Create links between all nodes and set their connections properly
+    async initLinks(nodes) {
+        let direct;
+        // let inGraph;
+        // let undisplayed = this.state.undisplayed
+        let links = [];
+        for(var existing of nodes) {
+            if(existing["Application ID"]) {
+                direct = (await asset.getApplicationAssetChildrenById(existing["Application ID"])).children
+            } else if(existing["Data ID"]) {
+                direct = (await asset.getDataAssetChildrenById(existing["Data ID"])).children
+            } else if(existing["Infrastructure ID"]) {
+                direct = (await asset.getInfrastructureAssetChildrenById(existing["Infrastructure ID"])).children
+            } else if(existing["Talent ID"]) {
+                direct = (await asset.getTalentAssetChildrenById(existing["Talent ID"])).children
+            } else if(existing["Projects ID"]) {
+                direct = (await asset.getProjectsAssetChildrenById(existing["Projects ID"])).children
+            } else if(existing["Business ID"]) {
+                direct = (await asset.getBusinessAssetChildrenById(existing["Business ID"])).children
+            }
+
+            if(direct !== undefined) {
+                direct = direct.map(connected =>
+                    nodes.find(node =>
+                        this.equal(node, connected)
+                    )
+                ).filter(node => node !== undefined)
+            }
+            direct.forEach(node => node["connections"] += 1)
+
+            existing["connections"] += direct.length
+
+            // create links between them
+            links = links.concat(direct.map(connected => {
+                return {source: existing["id"], target: connected["id"], value: 1}
+            }))
+        }
+
+        return links
+    }
+
+    // Add the "id" property to nodes
+    tagNodes(nodes) {
+        nodes.forEach((node, index) => {
+            // mandatory, ignored
+            node["group"] = index + 1
+            switch (node["Asset Type"]) {
+                case "Application":
+                    node["id"] = "A-" + node["Application ID"];
+                    break;
+                case "Data":
+                    node["id"] = "D-" + node["Data ID"];
+                    break;
+                case "Infrastructure":
+                    node["id"] = "I-" + node["Infrastructure ID"];
+                    break;
+                case "Talent":
+                    node["id"] = "T-" + node["Talent ID"];
+                    break;
+                case "Projects":
+                    node["id"] = "P-" + node["Projects ID"];
+                    break;
+                case "Business":
+                    node["id"] = "B-" + node["Business ID"];
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 
     // Check if an asset is already in the graph, and get a reference to it if it is,
@@ -330,6 +484,7 @@ export default class Graph extends Component {
 
     //checks if asset1 is the same as asset2 
     equal(asset1, asset2){
+        // console.log("comparing " + asset1["Name"] + " and " + asset2["Name"])
         switch(asset1["Asset Type"]) {
             case "Application": return asset1["Application ID"] === asset2["Application ID"];
             case "Data": return asset1["Data ID"] === asset2["Data ID"];
@@ -354,7 +509,7 @@ export default class Graph extends Component {
      *      asset's only children is its parent - parent connection already displayed, no other valid children need to be displayed
     */
     checkForUndisplayedChildren(asset){
-        // TODO change this to get all connections to asset and check if any of them are not yet in the graph
+        // TODO delete this when done converting to new graph
 
         let childrenCount = this.countChildren(asset.data);
 
@@ -381,6 +536,10 @@ export default class Graph extends Component {
         }
 
         return true;
+    }
+
+    checkForUndisplayedConnections(asset) {
+        return this.state.undisplayed.length > 0
     }
 
     /* FOR FUTURE ADAPTION TO THE DATABASE:
@@ -599,67 +758,12 @@ export default class Graph extends Component {
             .append("g")
             .attr("transform", "translate(50,50)");
 
-        const data = {
-            nodes: await Promise.all([
-                asset.getBusinessAssetById(1),
-                asset.getBusinessAssetById(3),
-                asset.getDataAssetById(1),
-                asset.getDataAssetById(2),
-                asset.getApplicationAssetById(1),
-                asset.getApplicationAssetById(2),
-                asset.getTalentAssetById(1),
-                asset.getTalentAssetById(2),
-                asset.getTalentAssetById(5)
-            ]),
-            links: [
-                {source: "B-1", target: "D-1", value: 1},
-                {source: "B-1", target: "D-2", value: 1},
-                {source: "D-1", target: "A-1", value: 1},
-                {source: "D-1", target: "A-2", value: 1},
-                {source: "D-1", target: "T-1", value: 1},
-                {source: "D-1", target: "T-2", value: 1},
-                {source: "D-1", target: "T-5", value: 1},
-                {source: "D-2", target: "B-3", value: 1},
-                {source: "D-2", target: "A-2", value: 1},
-                {source: "D-2", target: "T-2", value: 1}
-            ]
-        }
+        const data = this.state.data
 
-        data.nodes[0]["connections"] = 2;
-        data.nodes[1]["connections"] = 1;
-        data.nodes[2]["connections"] = 6;
-        data.nodes[3]["connections"] = 4;
-        data.nodes[4]["connections"] = 1;
-        data.nodes[5]["connections"] = 2;
-        data.nodes[6]["connections"] = 1;
-        data.nodes[7]["connections"] = 2;
-        data.nodes[8]["connections"] = 1;
-
-        data.nodes.forEach((node, index) => {
-            node["group"] = index + 1
-            switch (node["Asset Type"]) {
-                case "Application":
-                    node["id"] = "A-" + node["Application ID"];
-                    break;
-                case "Data":
-                    node["id"] = "D-" + node["Data ID"];
-                    break;
-                case "Infrastructure":
-                    node["id"] = "I-" + node["Infrastructure ID"];
-                    break;
-                case "Talent":
-                    node["id"] = "T-" + node["Talent ID"];
-                    break;
-                case "Projects":
-                    node["id"] = "P-" + node["Projects ID"];
-                    break;
-                case "Business":
-                    node["id"] = "B-" + node["Business ID"];
-                    break;
-                default:
-                    break;
-            }
-        });
+        console.log("nodes: ")
+        console.log(data.nodes)
+        console.log("links: ")
+        console.log(data.links)
 
         // Initialize the links
         const link = svg
@@ -726,24 +830,12 @@ export default class Graph extends Component {
             .attr("stdDeviation", "1.5")
             .attr("result", "coloredBlur");
 
-        // const feMerge = normalFilter.append("feMerge");
-        // feMerge.append("feMergeNode")
-        //     .attr("in", "coloredBlur");
-        // feMerge.append("feMergeNode")
-        //     .attr("in", "SourceGraphic");
-
         // filter for the glow around selected nodes
         const selectedFilter = defs.append("filter")
             .attr("id", "selectedGlow");
         selectedFilter.append("feGaussianBlur")
             .attr("stdDeviation", "2.5")
             .attr("result", "coloredBlur");
-
-        // const selectedFeMerge = normalFilter.append("feMerge");
-        // selectedFeMerge.append("feMergeNode")
-        //     .attr("in", "coloredBlur");
-        // selectedFeMerge.append("feMergeNode")
-        //     .attr("in", "SourceGraphic");
 
         svg.selectAll("circle")
             .style("filter", d => matchAsset(d, "url(#selectedGlow)", "url(#normalGlow)"));
