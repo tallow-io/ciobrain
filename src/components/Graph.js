@@ -6,6 +6,9 @@ import { AssetCategoryEnum } from './AssetCategoryEnum';
 import appIcon from '../images/appIcon.png'
 import dataIcon from '../images/dataIcon.png'
 import infrastructureIcon from '../images/infrastructureIcon.png'
+import talentIcon from '../images/talentIcon.png'
+import projectsIcon from '../images/projectsIcon.png'
+import businessIcon from '../images/businessIcon.png'
 
 export default class Graph extends Component {
     constructor (props){
@@ -336,11 +339,11 @@ export default class Graph extends Component {
                         return infrastructureIcon;
                     //Placeholder icons for Talent, Projects, and Business
                     case "Talent":
-                        return infrastructureIcon;
+                        return talentIcon;
                     case "Projects":
-                        return infrastructureIcon;
+                        return projectsIcon;
                     case "Business":
-                        return infrastructureIcon;
+                        return businessIcon;
                     default:
                         return;
                 }
