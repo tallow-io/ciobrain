@@ -289,6 +289,7 @@ export default class Graph extends Component {
         const width = this.state.width - 500;
         const height = this.state.height - 50;
 
+        // tooltip to show info on node when hovering over it
         const hoverInfo = d3.select(this.graphReference.current)
             .append("div")
             .attr("class", "hoverInfo")
@@ -425,6 +426,7 @@ export default class Graph extends Component {
 
         // move the nodes around when dragging them
         let dragStart = event => {
+            // make tooltip disappear when starting to drag
             hoverInfo.transition().duration(250).style("opacity", 0)
             if (!event.active)
                 simulation.alphaTarget(0.3).restart();
@@ -433,6 +435,8 @@ export default class Graph extends Component {
         }
 
         let dragging = event => {
+            // without this, it will reappear while dragging
+            hoverInfo.transition().duration(0).style("opacity", 0)
             event.subject.fx = event.x;
             event.subject.fy = event.y;
         }
@@ -450,21 +454,30 @@ export default class Graph extends Component {
                 this.expandAsset(d);
                 updateForces()
             })
+            // display tooltip when mousing over it
             .on('mouseover', (event, assetData) => {
-                const connections = assetData["connections"].toString();
-                const type = assetData["Asset Type"] === "Infrastructure" ? assetData["Long Type"] : assetData["Type"];
                 const detailText = hoverInfo.text("")
+                // connections as string
+                const connections = assetData["connections"].toString();
+                // detailed type of asset
+                const type = assetData["Asset Type"] === "Infrastructure" ? assetData["Long Type"] : assetData["Type"];
 
+                // details to add to the tooltip
                 const details = ["Name", "Connections", "Type", "Owner", "Vendor", "Language", "Software", "Business Function", "Comment"];
 
                 details.forEach(label => {
+                    // value to display
                     const value = label === "Type" ? type : label === "Connections" ? connections : assetData[label];
-                    if (!value) return;
+                    if (!value)
+                        return;
+                    
+                    // add it to the tooltip
                     detailText.append("text").text(label + ": ")
                         .append("text").style("font-weight", "bold").text(value)
                         .append("br");
                 })
 
+                // positin it next to the node
                 const posX = event.x
                 const posY = event.y
                 const panelWidth = hoverInfo.node().getBoundingClientRect().width;
