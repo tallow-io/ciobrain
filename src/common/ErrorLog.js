@@ -1,34 +1,32 @@
-import axios from "axios";
-import App from './../App'
+import axios from "axios"
+import App from "./../App"
 
-let URL = process.env.DEVELOPMENT?"https://localhost:3001":"https://ciobrainapi.azurewebsites.net/asset"
-let errorLoggingURL = URL + '/log'
+let URL = process.env.DEVELOPMENT
+    ? "https://localhost:3001"
+    : "https://ciobrainapi.azurewebsites.net/asset"
+let errorLoggingURL = URL + "/log"
 
 export async function log(error, details) {
-  displayMessage(error);
-  try {
-    const response = await axios.post( errorLoggingURL, {
-        time: getCurrentDateTime(),
-        data: "ERROR: " + error, 
-        details: details
-    });
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
+    displayMessage(error)
+    try {
+        const response = await axios.post(errorLoggingURL, {
+            time: getCurrentDateTime(),
+            data: "ERROR: " + error,
+            details: details
+        })
+        return response.data
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 function displayMessage(error) {
-  window.app.addMessage(error + ". See server log for more details. ");
+    window.app.addMessage(error + ". See server log for more details. ")
 }
 
 function getCurrentDateTime() {
-    var today = new Date();
-    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-    return date+' '+time;
-
+    var today = new Date()
+    var date = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate()
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds()
+    return date + " " + time
 }
-
-
-

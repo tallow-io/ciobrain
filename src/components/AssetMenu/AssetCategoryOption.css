@@ -1,4 +1,4 @@
-.assetCategoryOption{
+.assetCategoryOption {
     display: flex;
     justify-content: left;
     margin: 10px 10px 10px 10px;
@@ -7,12 +7,12 @@
     font-size: 18px;
 }
 
-.assetCategoryDropdown{
+.assetCategoryDropdown {
     display: inline;
     font-size: 14px;
 }
 
-.assetOption{
+.assetOption {
     margin: 15px 5px 15px 50px;
     font-size: 14px;
 }

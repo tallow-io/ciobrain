@@ -1,19 +1,23 @@
-import React, {Component} from 'react'
+import React, { Component } from "react"
 
 export default class MessageModal extends Component {
     constructor() {
-        super();
-        this.state = {  
-        }
+        super()
+        this.state = {}
     }
 
-    render () {
+    render() {
         return (
             <div className="alert info">
-                <span className="closebtn" index = {this.props.index} onClick={this.props.removeMessage}>&times;</span>  
+                <span
+                    className="closebtn"
+                    index={this.props.index}
+                    onClick={this.props.removeMessage}
+                >
+                    &times;
+                </span>
                 <strong>WARNING: </strong> {this.props.message}
             </div>
-        );
-    }    
-} 
-    
+        )
+    }
+}

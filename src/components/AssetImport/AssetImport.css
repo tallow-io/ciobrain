@@ -38,7 +38,7 @@ button {
 }
 
 .modal {
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", sans-serif;
     font-size: 12px;
 }
 
@@ -51,7 +51,7 @@ button {
     border-bottom: 2px solid var(--blue);
     text-align: center;
     padding: 10px;
-    background-image: -webkit-radial-gradient(50% 50%, #742AD5, #2527E4, #02CA92);
+    background-image: -webkit-radial-gradient(50% 50%, #742ad5, #2527e4, #02ca92);
     color: transparent;
     -webkit-background-clip: text;
 }

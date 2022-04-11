@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { getApplicationAssetById, getDataAssetById, getInfrastructureAssetById, getTalentAssetById, getProjectsAssetById, getBusinessAssetById } from '../common/Asset';
 import { AssetCategoryEnum } from './AssetCategoryEnum';
-import AssetCategoryOption from './AssetMenu/AssetCategoryOption';
 import * as ERRORLOG from './../common/ErrorLog'
 
 export default class AssetDetails extends Component {
