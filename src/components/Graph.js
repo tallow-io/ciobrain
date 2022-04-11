@@ -283,10 +283,17 @@ export default class Graph extends Component {
     // Draw the graph with D3.
     async update(selectedCategory, selectedAssetKey) {
         this.clearGraph();
+        d3.selectAll("div.hoverInfo").remove().exit();
 
         const container = d3.select(this.graphReference.current);
         const width = this.state.width - 500;
         const height = this.state.height - 50;
+
+        const hoverInfo = d3.select(this.graphReference.current)
+            .append("div")
+            .attr("class", "hoverInfo")
+            .style("opacity", 0);
+
 
         const matchSelected = (d, ifMatch, otherwise) => {
             if(d[selectedCategory + " ID"] && d[selectedCategory + " ID"] == selectedAssetKey)
@@ -418,9 +425,11 @@ export default class Graph extends Component {
 
         // move the nodes around when dragging them
         let dragStart = event => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-                event.subject.fx = event.x;
-                event.subject.fy = event.y;
+            hoverInfo.transition().duration(250).style("opacity", 0)
+            if (!event.active)
+                simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
         }
 
         let dragging = event => {
@@ -429,7 +438,8 @@ export default class Graph extends Component {
         }
 
         let dragEnd = event => {
-            if (!event.active) simulation.alphaTarget(0);
+            if (!event.active)
+                simulation.alphaTarget(0);
             event.subject.fx = null;
             event.subject.fy = null;
         }
@@ -440,6 +450,33 @@ export default class Graph extends Component {
                 this.expandAsset(d);
                 updateForces()
             })
+            .on('mouseover', (event, assetData) => {
+                const connections = assetData["connections"].toString();
+                const type = assetData["Asset Type"] === "Infrastructure" ? assetData["Long Type"] : assetData["Type"];
+                const detailText = hoverInfo.text("")
+
+                const details = ["Name", "Connections", "Type", "Owner", "Vendor", "Language", "Software", "Business Function", "Comment"];
+
+                details.forEach(label => {
+                    const value = label === "Type" ? type : label === "Connections" ? connections : assetData[label];
+                    if (!value) return;
+                    detailText.append("text").text(label + ": ")
+                        .append("text").style("font-weight", "bold").text(value)
+                        .append("br");
+                })
+
+                const posX = event.x
+                const posY = event.y
+                const panelWidth = hoverInfo.node().getBoundingClientRect().width;
+                const panelHeight = hoverInfo.node().getBoundingClientRect().height;
+                const infoX = posX >= (window.innerWidth * 0.85) ? posX - panelWidth - 10 : posX + 10;
+                const infoY = posY >= (window.innerHeight * 0.85) ? posY - panelHeight - 10 : posY + 10;
+
+                hoverInfo.style("left", infoX + "px").style("top", infoY + "px");
+                hoverInfo.transition().duration(250).style("opacity", 1);
+
+            })
+            .on('mouseout', _ => hoverInfo.transition().duration(250).style("opacity", 0))
             .call(d3.drag()
                 .on("start", dragStart)
                 .on("drag", dragging)
