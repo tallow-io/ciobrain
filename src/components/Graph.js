@@ -6,8 +6,6 @@ import { AssetCategoryEnum } from './AssetCategoryEnum';
 import appIcon from '../images/appIcon.png'
 import dataIcon from '../images/dataIcon.png'
 import infrastructureIcon from '../images/infrastructureIcon.png'
-import * as ERRORLOG from '../common/ErrorLog'
-import { tickStep } from 'd3';
 
 export default class Graph extends Component {
     constructor (props){
@@ -31,7 +29,7 @@ export default class Graph extends Component {
             this.setState({ selectedCategory: nextProps.selectedCategory, selectedAssetKey: nextProps.selectedAssetKey}, async () => {
                 if(nextProps.selectedCategory && nextProps.selectedAssetKey) {
                     await this.initData();
-                    this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
+                    this.update(this.state.selectedCategory, this.state.selectedAssetKey)
                 }
             });
         }
@@ -57,7 +55,7 @@ export default class Graph extends Component {
 
     updateDimensions() {
         this.setState({width: window.innerWidth, height: window.innerHeight});
-        this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
+        this.update(this.state.selectedCategory, this.state.selectedAssetKey)
     }
 
     clearGraph() {
@@ -66,6 +64,7 @@ export default class Graph extends Component {
             .exit();
     }
 
+    // Get assets that are indirectly connected to the one identified by key + type.
     async getImplicitConnections(key, type) {
         var connections = [];
         var assets = await asset.getAllAssets()
@@ -81,37 +80,23 @@ export default class Graph extends Component {
         return connections
     }
 
-    // Add assets to the graph
-    async expandAssetForce(node) {
-        let toMove = this.state.undisplayed
-            .filter(conn => conn["source"] === node["id"])
-            .map(conn => conn["target"])
-        this.tagNodes(toMove)
-
-        // remove from undisplayed
-        this.state.undisplayed = this.state.undisplayed
-            .filter(conn => toMove.find(moving => this.equal(conn["target"], moving)) === undefined)
-
-        let nodes = this.state.data.nodes.concat(toMove)
-        nodes.forEach(node => node["connections"] = 0)
-        let links = await this.createLinks(nodes)
-        this.setState({data: { nodes: nodes, links: links }})
-        this.updateForce(this.state.selectedCategory, this.state.selectedAssetKey)
-    }
-
+    // Create new data to display.
     async initData() {
         var nodes = await this.initNodes()
         var links = await this.createLinks(nodes)
         this.setState({data: { nodes: nodes, links: links }})
     }
 
+    // Create nodes connected to the selected asset.
     async initNodes() {
         var origin;
         var nodes = [];
         switch(this.state.selectedCategory) {
             case 'Application': 
+                // get the selected asset
                 origin = await asset.getApplicationAssetById(this.state.selectedAssetKey)
                 nodes.push(origin)
+                // and those connected to it directly
                 nodes = nodes.concat((await asset.getApplicationAssetChildrenById(this.state.selectedAssetKey)).children);
                 break;
             case 'Data':
@@ -140,7 +125,8 @@ export default class Graph extends Component {
                 nodes = nodes.concat((await asset.getBusinessAssetChildrenById(this.state.selectedAssetKey)).children);
                 break;
         }
-        var implicit = await this.getImplicitConnections(this.state.selectedAssetKey, this.state.selectedCategory)
+        // and those indirectly connected to it
+        let implicit = await this.getImplicitConnections(this.state.selectedAssetKey, this.state.selectedCategory)
         nodes = nodes.concat(implicit)
         this.tagNodes(nodes)
 
@@ -151,7 +137,7 @@ export default class Graph extends Component {
     // Also cache undisplayed connectons to the nodes that are in the graph
     async createLinks(nodes) {
         let direct;
-        let inGraph;
+        let inGraph = [];
         let undisplayed = this.state.undisplayed
         let links = [];
 
@@ -172,9 +158,12 @@ export default class Graph extends Component {
 
             // get undisplayed connections that are implicitly connected to the node
             let implUndisplayed = (await this.getImplicitConnections(existing[existing["Asset Type"] + " ID"], existing["Asset Type"]))
+                // that are not in the nodes being linked
                 .filter(impl => nodes.find(node => this.equal(node, impl)) === undefined
-                        && this.state.data.nodes.find(node => this.equal(node, impl)) === undefined
-                        && this.state.undisplayed.find(undisp => this.equal(undisp.target, impl)) === undefined)
+                    // and not already in the graph
+                    && this.state.data.nodes.find(node => this.equal(node, impl)) === undefined
+                    // and that are not already cached to be displayed later
+                    && this.state.undisplayed.find(undisp => this.equal(undisp.target, impl)) === undefined)
                 .map(conn => { return {source: existing["id"], target: conn} })
             undisplayed = undisplayed.concat(implUndisplayed)
 
@@ -194,8 +183,11 @@ export default class Graph extends Component {
                     let foundInGraph = this.state.data.nodes.find(node =>
                         this.equal(node, connected)
                     )
+                    // that are not being linked now
                     return foundInNodes === undefined
+                        // and not already in the graph
                         && foundInGraph === undefined
+                        // and that are not already cached to be displayed later
                         && this.state.undisplayed.find(undisp => this.equal(undisp.target, connected)) === undefined ? connected : undefined
                         
                     }).filter(node => node !== undefined)
@@ -207,21 +199,12 @@ export default class Graph extends Component {
 
             existing["connections"] += inGraph.length
 
-            // const toAdd = inGraph.map(connected => {
-            //     let link = {source: existing.id, target: connected.id, value: 1}
-            //     return link
-            // })
-            // links = links.concat(toAdd)
-
             // create links between them
             links = links.concat(inGraph.map(connected => {
                 let link = {source: existing["id"], target: connected["id"], value: 1}
                 return link
             }))
         }
-
-        // console.log("created links")
-        // console.log(links)
 
         this.setState({undisplayed: undisplayed})
         return links
@@ -259,7 +242,29 @@ export default class Graph extends Component {
         return nodes
     }
 
-    //checks if asset1 is the same as asset2 
+    // Add assets to the graph.
+    async expandAsset(node) {
+        // to add onto the graph
+        let toMove = this.state.undisplayed
+            .filter(conn => conn["source"] === node["id"])
+            .map(conn => conn["target"])
+        this.tagNodes(toMove)
+
+        // remove from undisplayed
+        this.state.undisplayed = this.state.undisplayed
+            .filter(conn => toMove.find(moving => this.equal(conn["target"], moving)) === undefined)
+
+        // add them to displayed nodes
+        let nodes = this.state.data.nodes.concat(toMove)
+        nodes.forEach(node => node["connections"] = 0)
+        // and create new links between all of them
+        let links = await this.createLinks(nodes)
+        // then display the new graph
+        this.setState({data: { nodes: nodes, links: links }})
+        this.update(this.state.selectedCategory, this.state.selectedAssetKey)
+    }
+
+    // Checks if asset1 is the same as asset2.
     equal(asset1, asset2){
         switch(asset1["Asset Type"]) {
             case "Application": return asset1["Application ID"] === asset2["Application ID"];
@@ -272,15 +277,20 @@ export default class Graph extends Component {
         }
     }
 
-    // 
-    async updateForce(selectedCategory, selectedAssetKey) {
+    // Draw the graph with D3.
+    async update(selectedCategory, selectedAssetKey) {
         this.clearGraph();
 
         const container = d3.select(this.graphReference.current);
         const width = this.state.width - 500;
         const height = this.state.height - 50;
 
-        const matchAsset = (d, ifMatch, otherwise) => { if(d[selectedCategory + " ID"] && d[selectedCategory + " ID"] == selectedAssetKey) { return ifMatch } else { return otherwise } }
+        const matchSelected = (d, ifMatch, otherwise) => {
+            if(d[selectedCategory + " ID"] && d[selectedCategory + " ID"] == selectedAssetKey)
+                return ifMatch
+            else
+                return otherwise
+        }
 
         const svg = container
             .append("svg")
@@ -307,12 +317,14 @@ export default class Graph extends Component {
 
         const assetTypes = Object.values(AssetCategoryEnum);
 
+        // draw circles for the nodes
         node.append("circle")
-            .attr("r", d => matchAsset(d, 22, 20) + (d["connections"] - 1) * 2)
+            .attr("r", d => matchSelected(d, 22, 20) + (d["connections"] - 1) * 2)
             .style("fill", d => assetTypes.find(type => d["Asset Type"] === type.name).color)
             .attr("stroke", d => assetTypes.find(type => d["Asset Type"] === type.name).color)
             .style("stroke-width", 2);
 
+        // and add images on top
         node.append("image")
             .attr("xlink:href", d => {
                 switch (d["Asset Type"]) {
@@ -333,17 +345,19 @@ export default class Graph extends Component {
                         return;
                 }
             })
+            // the size grows with the number of connections it has
             .attr("x", d => -10 - (d["connections"] - 1))
             .attr("y", d => -10 - (d["connections"] - 1))
             .attr("width", d => 20 + (d["connections"] - 1) * 2)
             .attr("height", d => 20 + (d["connections"] - 1) * 2);
 
+        // and add the name under the nodes
         node.append("text")
             .style("text-anchor", "middle")
             .attr("y", d => 40 + (d["connections"] - 1))
-            .attr("font-weight", d => matchAsset(d, "bold", "normal"))
-            .attr("font-size", d => matchAsset(d, "large", "medium"))
-            .attr("text-decoration", d => matchAsset(d, "underline", "none"))
+            .attr("font-weight", d => matchSelected(d, "bold", "normal"))
+            .attr("font-size", d => matchSelected(d, "large", "medium"))
+            .attr("text-decoration", d => matchSelected(d, "underline", "none"))
             .text(d => d["Name"]);
 
         //Container for the gradients
@@ -356,25 +370,27 @@ export default class Graph extends Component {
             .attr("stdDeviation", "1.5")
             .attr("result", "coloredBlur");
 
-        // filter for the glow around selected nodes
+        // filter for the glow around the selected node
         const selectedFilter = defs.append("filter")
             .attr("id", "selectedGlow");
         selectedFilter.append("feGaussianBlur")
             .attr("stdDeviation", "2.5")
             .attr("result", "coloredBlur");
 
+        // apply it to the nodes
         svg.selectAll("circle")
-            .style("filter", d => matchAsset(d, "url(#selectedGlow)", "url(#normalGlow)"));
+            .style("filter", d => matchSelected(d, "url(#selectedGlow)", "url(#normalGlow)"));
 
-        // Let's list the force we wanna apply on the network
+        // draw the graph
         const simulation = d3.forceSimulation(data.nodes)
             .force("link", d3.forceLink()
                 .id(d => d["id"])
                 .links(data.links)
             )
-            .force("charge", d3.forceManyBody().strength(-3000)) // .distanceMin(1000).distanceMax(1800))
+            .force("charge", d3.forceManyBody().strength(-3000)) // .distanceMin(1000).distanceMax(1800)) // distance seems to be ignored
             .force("center", d3.forceCenter(width / 2, height / 2))
             .on("tick", _ => {
+                // position the links and nodes in the window where the simulation puts them
                 link.attr("x1", d => d.source.x)
                     .attr("y1", d => d.source.y)
                     .attr("x2", d => d.target.x)
@@ -382,6 +398,7 @@ export default class Graph extends Component {
 
                 node.attr("transform", d => "translate(" + d.x + "," + d.y + ")");
             });
+        
         simulation.tick(1000);
 
         // keep forces in check, I don't know why without this the nodes tend to be very close to each other
@@ -396,6 +413,7 @@ export default class Graph extends Component {
             simulation.alpha(0.1).restart()
         }
 
+        // move the nodes around when dragging them
         let dragStart = event => {
             if (!event.active) simulation.alphaTarget(0.3).restart();
                 event.subject.fx = event.x;
@@ -413,9 +431,10 @@ export default class Graph extends Component {
             event.subject.fy = null;
         }
 
+        // expand the asset when clicking on a node and handle dragging them
         node
             .on("click", (_, d) => {
-                this.expandAssetForce(d);
+                this.expandAsset(d);
                 updateForces()
             })
             .call(d3.drag()
@@ -428,7 +447,6 @@ export default class Graph extends Component {
 
     render() {
         return (
-            // <div className="graph" ref={this.graphReference} style={{ backgroundColor: "var(--green)" }}>
             <div className="graph" ref={this.graphReference}>
                 
             </div>
