@@ -20,7 +20,7 @@ export default class Graph extends Component {
             height: null,
             resizeTimeout: null,
             // data to display
-            data: null,
+            data: {nodes: [], links: []},
             // assets that are related to those on the graph but not yet drawn
             undisplayed: []
         }
@@ -81,7 +81,7 @@ export default class Graph extends Component {
         return connections
     }
 
-    // Add assets to the grapnh
+    // Add assets to the graph
     async expandAssetForce(node) {
         let toMove = this.state.undisplayed
             .filter(conn => conn["source"] === node["id"])
@@ -154,6 +154,7 @@ export default class Graph extends Component {
         let inGraph;
         let undisplayed = this.state.undisplayed
         let links = [];
+
         for(var existing of nodes) {
             if(existing["Application ID"]) {
                 direct = (await asset.getApplicationAssetChildrenById(existing["Application ID"])).children
@@ -170,10 +171,12 @@ export default class Graph extends Component {
             }
 
             // get undisplayed connections that are implicitly connected to the node
-            undisplayed = undisplayed.concat((await this.getImplicitConnections(existing[existing["Asset Type"] + " ID"], existing["Asset Type"]))
-                .filter(impl => nodes.find(node => this.equal(node, impl)) === undefined)
-                .map(conn => { return {source: existing["id"], target: conn} }))
-                
+            let implUndisplayed = (await this.getImplicitConnections(existing[existing["Asset Type"] + " ID"], existing["Asset Type"]))
+                .filter(impl => nodes.find(node => this.equal(node, impl)) === undefined
+                        && this.state.data.nodes.find(node => this.equal(node, impl)) === undefined
+                        && this.state.undisplayed.find(undisp => this.equal(undisp.target, impl)) === undefined)
+                .map(conn => { return {source: existing["id"], target: conn} })
+            undisplayed = undisplayed.concat(implUndisplayed)
 
             if(direct !== undefined) {
                 // direct connections to other nodes in the graph
@@ -184,25 +187,43 @@ export default class Graph extends Component {
                 ).filter(node => node !== undefined)
 
                 // and direct connections to those outside the graph
-                undisplayed = undisplayed.concat(direct.map(connected => {
-                    let found = nodes.find(node =>
+                let directUndisplayed = direct.map(connected => {
+                    let foundInNodes = nodes.find(node =>
                         this.equal(node, connected)
                     )
-                    return found === undefined ? connected : undefined
+                    let foundInGraph = this.state.data.nodes.find(node =>
+                        this.equal(node, connected)
+                    )
+                    return foundInNodes === undefined
+                        && foundInGraph === undefined
+                        && this.state.undisplayed.find(undisp => this.equal(undisp.target, connected)) === undefined ? connected : undefined
+                        
                     }).filter(node => node !== undefined)
-                    .map(conn => { return {source: existing["id"], target: conn} }))
+                    .map(conn => { return {source: existing["id"], target: conn} })
+
+                undisplayed = undisplayed.concat(directUndisplayed)
             }
             inGraph.forEach(node => node["connections"] += 1)
 
             existing["connections"] += inGraph.length
 
+            // const toAdd = inGraph.map(connected => {
+            //     let link = {source: existing.id, target: connected.id, value: 1}
+            //     return link
+            // })
+            // links = links.concat(toAdd)
+
             // create links between them
             links = links.concat(inGraph.map(connected => {
-                return {source: existing["id"], target: connected["id"], value: 1}
+                let link = {source: existing["id"], target: connected["id"], value: 1}
+                return link
             }))
         }
 
-        this.state.undisplayed = undisplayed
+        // console.log("created links")
+        // console.log(links)
+
+        this.setState({undisplayed: undisplayed})
         return links
     }
 
@@ -282,10 +303,7 @@ export default class Graph extends Component {
         const node = svg.selectAll(".node")
             .data(data.nodes)
             .enter().append("g")
-            .attr("class", "node")
-            .on("click", (_, d) => {
-                this.expandAssetForce(d);
-            });
+            .attr("class", "node");
 
         const assetTypes = Object.values(AssetCategoryEnum);
 
@@ -349,14 +367,14 @@ export default class Graph extends Component {
             .style("filter", d => matchAsset(d, "url(#selectedGlow)", "url(#normalGlow)"));
 
         // Let's list the force we wanna apply on the network
-        const simulation = d3.forceSimulation(data.nodes)              // Force algorithm is applied to data.nodes
-            .force("link", d3.forceLink()                        // This force provides links between nodes
-                .id(d => d["id"])                                  // This provide  the id of a node
-                .links(data.links)                                    // and this the list of links
+        const simulation = d3.forceSimulation(data.nodes)
+            .force("link", d3.forceLink()
+                .id(d => d["id"])
+                .links(data.links)
             )
-            .force("charge", d3.forceManyBody().strength(-1000))         // This adds repulsion between nodes. Play with the -400 for the repulsion strength
-            .force("center", d3.forceCenter(width / 2, height / 2))      // This force attracts nodes to the center of the svg area
-            .on("end", () => {
+            .force("charge", d3.forceManyBody().strength(-3000)) // .distanceMin(1000).distanceMax(1800))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .on("tick", _ => {
                 link.attr("x1", d => d.source.x)
                     .attr("y1", d => d.source.y)
                     .attr("x2", d => d.target.x)
@@ -365,6 +383,47 @@ export default class Graph extends Component {
                 node.attr("transform", d => "translate(" + d.x + "," + d.y + ")");
             });
         simulation.tick(1000);
+
+        // keep forces in check, I don't know why without this the nodes tend to be very close to each other
+        let updateForces = _ => {
+            simulation.force("center")
+                .x(width / 2)
+                .y(height / 2)
+            simulation.force("charge")
+                .strength(-3000)
+                .distanceMin(300)
+                .distanceMax(500)
+            simulation.alpha(0.1).restart()
+        }
+
+        let dragStart = event => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+        }
+
+        let dragging = event => {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        let dragEnd = event => {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        node
+            .on("click", (_, d) => {
+                this.expandAssetForce(d);
+                updateForces()
+            })
+            .call(d3.drag()
+                .on("start", dragStart)
+                .on("drag", dragging)
+                .on("end", dragEnd))
+
+        updateForces()
     }
 
     render() {
