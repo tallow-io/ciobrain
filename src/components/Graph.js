@@ -192,25 +192,33 @@ export default class Graph extends Component {
             }
 
             // get undisplayed connections that are implicitly connected to the node
+            // and are not in the nodes being linked
             let implUndisplayed = (
                 await this.getImplicitConnections(
                     existing[existing["Asset Type"] + " ID"],
                     existing["Asset Type"]
                 )
             )
-                // that are not in the nodes being linked
-                .filter(
-                    impl =>
-                        nodes.find(node => this.equal(node, impl)) === undefined &&
-                        // and not already in the graph
-                        this.state.data.nodes.find(node => this.equal(node, impl)) === undefined &&
-                        // and that are not already cached to be displayed later
-                        this.state.undisplayed.find(undisp => this.equal(undisp.target, impl)) ===
-                            undefined
-                )
+                .filter(impl => nodes.find(node => this.equal(node, impl)) === undefined)
                 .map(conn => {
-                    return { source: existing["id"], target: conn }
+                    // source is array of IDs because multiple nodes in the graph could link to this undisplayed node
+                    return { source: [existing["id"]], target: conn }
                 })
+
+            implUndisplayed.forEach((impl, index, array) => {
+                let alreadyCached = this.state.undisplayed.find(undisp =>
+                    this.equal(undisp.target, impl)
+                )
+
+                if (alreadyCached !== undefined) {
+                    // if already cached then just add this ID to the list of potential sources
+                    alreadyCached["source"].push(existing["id"])
+                    // and remove this one so we don't have duplicates
+                    array.splice(index, 1)
+                }
+            })
+
+            // then add new undisplayed nodes to the array
             undisplayed = undisplayed.concat(implUndisplayed)
 
             if (direct !== undefined) {
@@ -219,21 +227,10 @@ export default class Graph extends Component {
                     .map(connected => nodes.find(node => this.equal(node, connected)))
                     .filter(node => node !== undefined)
 
-                // and direct connections to those outside the graph
+                // and direct connections to those outside the graph that are not being linked
                 let directUndisplayed = direct
                     .map(connected => {
-                        let foundInNodes = nodes.find(node => this.equal(node, connected))
-                        let foundInGraph = this.state.data.nodes.find(node =>
-                            this.equal(node, connected)
-                        )
-                        // that are not being linked now
-                        return foundInNodes === undefined &&
-                            // and not already in the graph
-                            foundInGraph === undefined &&
-                            // and that are not already cached to be displayed later
-                            this.state.undisplayed.find(undisp =>
-                                this.equal(undisp.target, connected)
-                            ) === undefined
+                        return nodes.find(node => this.equal(node, connected)) === undefined
                             ? connected
                             : undefined
                     })
@@ -241,6 +238,18 @@ export default class Graph extends Component {
                     .map(conn => {
                         return { source: existing["id"], target: conn }
                     })
+
+                // remove duplicate undisplayed nodes again
+                directUndisplayed.forEach((impl, index, array) => {
+                    let alreadyCached = this.state.undisplayed.find(undisp =>
+                        this.equal(undisp.target, impl)
+                    )
+
+                    if (alreadyCached !== undefined) {
+                        alreadyCached["source"].push(existing["id"])
+                        array.splice(index, 1)
+                    }
+                })
 
                 undisplayed = undisplayed.concat(directUndisplayed)
             }
@@ -297,7 +306,7 @@ export default class Graph extends Component {
     async expandAsset(node) {
         // to add onto the graph
         let toMove = this.state.undisplayed
-            .filter(conn => conn["source"] === node["id"])
+            .filter(conn => conn["source"].includes(node["id"]))
             .map(conn => conn["target"])
         this.tagNodes(toMove)
 
