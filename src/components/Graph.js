@@ -303,12 +303,13 @@ export default class Graph extends Component {
 
     // Add assets to the graph.
     async expandAsset(node) {
+        // without this, if you try to expand the selected node then expand another,
+        // a bunch of duplicates without links appear all over
         if (
             node["Asset Type"] === this.state.selectedCategory &&
             node[this.state.selectedCategory + " ID"] === parseInt(this.state.selectedAssetKey)
-        ) {
+        )
             return
-        }
         // to add onto the graph
         let toMove = this.state.undisplayed
             .filter(conn => conn["source"].includes(node["id"]))
