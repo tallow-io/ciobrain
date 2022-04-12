@@ -76,8 +76,8 @@ export default class Graph extends Component {
 
     // Get assets that are indirectly connected to the one identified by key + type.
     async getImplicitConnections(key, type) {
-        var connections = []
-        var assets = await asset.getAllAssets()
+        let connections = []
+        let assets = await asset.getAllAssets()
         assets.forEach(asset => {
             if (asset[type + " Connections"] && asset[type + " Connections"].trim().length) {
                 asset[type + " Connections"]
@@ -95,15 +95,15 @@ export default class Graph extends Component {
 
     // Create new data to display.
     async initData() {
-        var nodes = await this.initNodes()
-        var links = await this.createLinks(nodes)
+        let nodes = await this.initNodes()
+        let links = await this.createLinks(nodes)
         this.setState({ data: { nodes: nodes, links: links } })
     }
 
     // Create nodes connected to the selected asset.
     async initNodes() {
-        var origin
-        var nodes = []
+        let origin
+        let nodes = []
         switch (this.state.selectedCategory) {
             case "Application":
                 // get the selected asset
@@ -164,14 +164,14 @@ export default class Graph extends Component {
     }
 
     // Create links between all nodes and set their connections properly.
-    // Also cache undisplayed connectons to the nodes that are in the graph
+    // Also cache undisplayed connections to the nodes that are in the graph.
     async createLinks(nodes) {
         let direct
         let inGraph = []
         let undisplayed = this.state.undisplayed
         let links = []
 
-        for (var existing of nodes) {
+        for (let existing of nodes) {
             if (existing["Application ID"]) {
                 direct = (await asset.getApplicationAssetChildrenById(existing["Application ID"]))
                     .children
@@ -260,8 +260,7 @@ export default class Graph extends Component {
             // create links between them
             links = links.concat(
                 inGraph.map(connected => {
-                    let link = { source: existing["id"], target: connected["id"], value: 1 }
-                    return link
+                    return { source: existing["id"], target: connected["id"], value: 1 }
                 })
             )
         }
@@ -270,7 +269,7 @@ export default class Graph extends Component {
         return links
     }
 
-    // Add the "id", "connections", and "group" properties to nodes
+    // Add the "id", "connections", and "group" properties to nodes.
     tagNodes(nodes) {
         nodes.forEach((node, index) => {
             node["connections"] = 0
@@ -325,7 +324,7 @@ export default class Graph extends Component {
         this.update(this.state.selectedCategory, this.state.selectedAssetKey)
     }
 
-    // Checks if asset1 is the same as asset2.
+    // Check if two assets are the same using their asset type and ID.
     equal(asset1, asset2) {
         switch (asset1["Asset Type"]) {
             case "Application":
