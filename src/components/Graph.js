@@ -410,7 +410,6 @@ export default class Graph extends Component {
                         return dataIcon
                     case "Infrastructure":
                         return infrastructureIcon
-                    //Placeholder icons for Talent, Projects, and Business
                     case "Talent":
                         return talentIcon
                     case "Projects":
