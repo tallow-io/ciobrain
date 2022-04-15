@@ -470,11 +470,12 @@ export default class Graph extends Component {
             .force(
                 "link",
                 d3
-                    .forceLink()
+                    .forceLink()    // .distance(50)    // play around with this if you want
                     .id(d => d["id"])
                     .links(data.links)
             )
-            .force("charge", d3.forceManyBody().strength(-3000)) // .distanceMin(1000).distanceMax(1800)) // distance seems to be ignored
+            .force("charge", d3.forceManyBody().strength(-30)) // .distanceMin(1000).distanceMax(1800)) // distance seems to be ignored
+            .force("collide", d3.forceCollide().radius(50))
             .force("center", d3.forceCenter(width / 2, height / 2))
             .on("tick", _ => {
                 // position the links and nodes in the window where the simulation puts them
