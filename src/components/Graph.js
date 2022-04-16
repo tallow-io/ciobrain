@@ -171,6 +171,9 @@ export default class Graph extends Component {
         let undisplayed = this.state.undisplayed
         let links = []
 
+        // filter duplicates
+        nodes = nodes.filter((node, index) => { return nodes.indexOf(node) === index; })
+
         for (let existing of nodes) {
             if (existing["Application ID"]) {
                 direct = (await asset.getApplicationAssetChildrenById(existing["Application ID"]))
@@ -200,11 +203,14 @@ export default class Graph extends Component {
                 )
             )
                 .filter(impl => nodes.find(node => this.equal(node, impl)) === undefined)
+                .filter(impl => this.state.undisplayed.find(node => this.equal(node, impl)) === undefined)
                 .map(conn => {
                     // source is array of IDs because multiple nodes in the graph could link to this undisplayed node
                     return { source: [existing["id"]], target: conn }
                 })
 
+            
+            /*  // legacy implementation
             implUndisplayed.forEach((impl, index, array) => {
                 let alreadyCached = this.state.undisplayed.find(undisp =>
                     this.equal(undisp.target, impl)
@@ -216,6 +222,12 @@ export default class Graph extends Component {
                     // and remove this one so we don't have duplicates
                     array.splice(index, 1)
                 }
+            })
+            */
+
+            // filters out duplicate entries
+            implUndisplayed = implUndisplayed.filter((node, index) => {
+                return implUndisplayed.indexOf(node) === index;
             })
 
             // then add new undisplayed nodes to the array
@@ -303,6 +315,7 @@ export default class Graph extends Component {
 
     // Add assets to the graph.
     async expandAsset(node) {
+        console.log("expandAsset called!!!")
         // without this, if you try to expand the selected node then expand another,
         // a bunch of duplicates without links appear all over
         if (
@@ -314,6 +327,20 @@ export default class Graph extends Component {
         let toMove = this.state.undisplayed
             .filter(conn => conn["source"].includes(node["id"]))
             .map(conn => conn["target"])
+        
+        // filter duplicates
+        toMove = toMove.filter((node, index) => { return toMove.indexOf(node) === index; })
+        
+        // Checks for duplicates via ID
+        let tempID = [], tempInd = []
+        toMove.forEach((n, ind) => {
+            let nid = "" + n[n["Asset Type"] + " ID"];
+            if (!tempID.includes(nid)){ tempID.push(nid); tempInd.push(ind); } })
+        toMove = toMove.filter((n, ind) => tempInd.includes(ind))
+
+        // debug: view toMove
+        toMove.forEach((node) => { console.log(Object.values(node)) })
+
         this.tagNodes(toMove)
 
         // remove from undisplayed
@@ -332,20 +359,21 @@ export default class Graph extends Component {
     }
 
     // Check if two assets are the same using their asset type and ID.
+    // Changed from === to == because === checks for same place in memory rather than content.
     equal(asset1, asset2) {
         switch (asset1["Asset Type"]) {
             case "Application":
-                return asset1["Application ID"] === asset2["Application ID"]
+                return asset1["Application ID"] == asset2["Application ID"]
             case "Data":
-                return asset1["Data ID"] === asset2["Data ID"]
+                return asset1["Data ID"] == asset2["Data ID"]
             case "Infrastructure":
-                return asset1["Infrastructure ID"] === asset2["Infrastructure ID"]
+                return asset1["Infrastructure ID"] == asset2["Infrastructure ID"]
             case "Talent":
-                return asset1["Talent ID"] === asset2["Talent ID"]
+                return asset1["Talent ID"] == asset2["Talent ID"]
             case "Projects":
-                return asset1["Projects ID"] === asset2["Projects ID"]
+                return asset1["Projects ID"] == asset2["Projects ID"]
             case "Business":
-                return asset1["Business ID"] === asset2["Business ID"]
+                return asset1["Business ID"] == asset2["Business ID"]
             default:
                 return false
         }
@@ -463,6 +491,11 @@ export default class Graph extends Component {
         svg.selectAll("circle").style("filter", d =>
             matchSelected(d, "url(#selectedGlow)", "url(#normalGlow)")
         )
+
+        // filter duplicates
+        data.nodes = data.nodes.filter((node, index) => {
+            return data.nodes.indexOf(node) === index;
+        })
 
         // draw the graph
         const simulation = d3
