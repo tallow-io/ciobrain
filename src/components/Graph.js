@@ -509,7 +509,7 @@ export default class Graph extends Component {
             )
             .force("charge", d3.forceManyBody().strength(-30)) // .distanceMin(1000).distanceMax(1800)) // distance seems to be ignored
             .force("collide", d3.forceCollide().radius(50))
-            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("center", d3.forceCenter(2 * width / 5, 2 * height / 5))
             .on("tick", _ => {
                 // position the links and nodes in the window where the simulation puts them
                 link.attr("x1", d => d.source.x)
@@ -526,8 +526,8 @@ export default class Graph extends Component {
         let updateForces = _ => {
             simulation
                 .force("center")
-                .x(width / 2)
-                .y(height / 2)
+                .x(2 * width / 5)
+                .y(2 * height / 5)
             simulation.force("charge").strength(-3000).distanceMin(300).distanceMax(500)
             simulation.alpha(0.1).restart()
         }
