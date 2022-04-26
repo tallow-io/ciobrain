@@ -20,12 +20,13 @@
     left: 42px;
     top: 60px;
     margin: 20px 0;
-
     background: #ffffff;
     border: 1px solid #d6d6d6;
     box-sizing: border-box;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+   
+    height:auto;
 }
 
 #assetMenu {
@@ -99,3 +100,97 @@
 .alert.info {
     background-color: var(--blue);
 }
+
+
+.chooseAssetButton{
+    background-color: #4c00ff; /* Green */
+    border: none;
+    color: white;
+    text-align: center;
+    font-size: 10px;
+    position: relative;
+    top:0px;
+    left:250px;
+
+  }
+
+
+  .assetsContainer{
+    display:block;
+  }
+
+ 
+
+  .mobileAssetsContainer{
+    
+    display:none;   
+  }
+
+
+  @media screen and (max-width: 812px) {
+
+    .assetsContainer {
+        display:none;
+    }
+ 
+    
+    .mobileAssetsContainer{
+        display:block;
+        /* grid-template-columns:repeat(2, 1fr);
+        position:relative; */
+      
+    }
+
+    .card {
+        width: auto;
+        left:0px;
+        top:0px;
+        min-height:auto;
+        margin-left:10px;
+        padding-right:10px;
+    
+         
+    }
+
+    #assetDetail{
+        top:50px;
+        /* right:12px; */
+        position:absolute;
+        background: #ffffff;
+        border: 1px solid #220101;
+        box-sizing: border-box;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+        height:auto;
+        padding-bottom:10px;  
+        z-index: -1; 
+       
+    }
+
+    #assetDetailHeader {
+        margin: 20px 0 0 20px;
+        font-size: 15px;
+        font-weight: bold;
+        text-align: left;
+        font-family: "Roboto", sans-serif;
+    }
+    
+    #assetDetailSections {
+        margin: 20px 0 0 20px;
+        font-size: 10px;
+        line-height: 10px;
+        text-align: left;
+        font-family: "Roboto", sans-serif;
+        
+    }
+    
+    #assetName {
+        text-align: left;
+        font-size: 15px;
+        margin: 20px 0 0 20px;
+    }
+
+   
+   
+}
+

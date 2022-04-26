@@ -24,6 +24,7 @@ export default class Graph extends Component {
             data: { nodes: [], links: [] },
             // assets that are related to those on the graph but not yet drawn
             undisplayed: []
+
         }
     }
 
@@ -385,8 +386,8 @@ export default class Graph extends Component {
         d3.selectAll("div.hoverInfo").remove().exit()
 
         const container = d3.select(this.graphReference.current)
-        const width = this.state.width - 500
-        const height = this.state.height - 50
+        const width = this.state.width
+        const height = this.state.height
 
         // tooltip to show info on node when hovering over it
         const hoverInfo = d3
