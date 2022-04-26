@@ -2,7 +2,7 @@
     margin: 0;
     position: absolute;
     top: 50px;
-    left: 400px;
+    left: 200px;
 }
 
 .hoverInfo {
@@ -17,3 +17,14 @@
     font-size: 15px;
     font-weight: normal;
 }
+
+
+@media screen and (max-width: 812px) {
+.graph{  
+    position: relative;
+    left:0px;
+    top:-200px;
+}
+
+}
+
