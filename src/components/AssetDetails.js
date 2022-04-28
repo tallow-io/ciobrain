@@ -1,157 +1,65 @@
-import React, { Component } from 'react';
-import { getApplicationAssetById, getDataAssetById, getInfrastructureAssetById, getTalentAssetById, getProjectsAssetById, getBusinessAssetById } from '../common/Asset';
-import { AssetCategoryEnum } from './AssetCategoryEnum';
+import React, {Component} from 'react';
+import {AssetCategoryEnum} from './AssetCategoryEnum';
 import * as ERRORLOG from './../common/ErrorLog'
+import {getAssetById} from "../common/Asset.js";
 
 export default class AssetDetails extends Component {
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
-            selectedCategory: null,
-            selectedAssetKey: null,
-            asset: null,
-            assetColor: null,
-            assetConnections: null
-            
+            selectedCategory: null, selectedAssetKey: null, asset: null, assetColor: null, assetConnections: null
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.state.selectedCategory !== nextProps.selectedCategory ||  this.state.selectedAssetKey !== nextProps.selectedAssetKey) {
-            this.setState({ selectedCategory: nextProps.selectedCategory, selectedAssetKey: nextProps.selectedAssetKey});
-            this.getAssetDetails(nextProps.selectedAssetKey, nextProps.selectedCategory)
-        }
-            
+    async componentWillReceiveProps(nextProps) {
+        if (this.state.selectedCategory === nextProps.selectedCategory && this.state.selectedAssetKey === nextProps.selectedAssetKey) return;
+        this.setState({selectedCategory: nextProps.selectedCategory, selectedAssetKey: nextProps.selectedAssetKey});
+        await this.getAssetDetails(nextProps.selectedAssetKey, nextProps.selectedCategory)
     }
 
-    async getAssetDetails(selectedAssetKey, selectedCategory){
-        //call api and store into object
-        var asset;
-        var assetConnections;
-
-        switch(selectedCategory){
-            case "Application": 
-                asset = await getApplicationAssetById(selectedAssetKey);
-                assetConnections = this.getAssetConnections(asset);
-                this.setState({ asset: asset, assetColor: AssetCategoryEnum.APPLICATION.color, assetConnections: assetConnections});
-                break;
-
-            case "Data": 
-                asset = await getDataAssetById(selectedAssetKey);
-                assetConnections = this.getAssetConnections(asset);
-                this.setState({ asset: asset, assetColor: AssetCategoryEnum.DATA.color, assetConnections: assetConnections});
-                break;
-
-            case "Infrastructure": 
-                asset = await getInfrastructureAssetById(selectedAssetKey);
-                assetConnections = this.getAssetConnections(asset);
-                this.setState({ asset: asset, assetColor: AssetCategoryEnum.INFRASTRUCTURE.color, assetConnections: assetConnections});
-                break;
-
-            case "Talent": 
-                asset = await getTalentAssetById(selectedAssetKey);
-                assetConnections = this.getAssetConnections(asset);
-                this.setState({ asset: asset, assetColor: AssetCategoryEnum.TALENT.color, assetConnections: assetConnections});
-                break;
-            
-            case "Projects": 
-                asset = await getProjectsAssetById(selectedAssetKey);
-                assetConnections = this.getAssetConnections(asset);
-                this.setState({ asset: asset, assetColor: AssetCategoryEnum.PROJECTS.color, assetConnections: assetConnections});
-                break;
-
-            case "Business": 
-                asset = await getBusinessAssetById(selectedAssetKey);
-                assetConnections = this.getAssetConnections(asset);
-                this.setState({ asset: asset, assetColor: AssetCategoryEnum.BUSINESS.color, assetConnections: assetConnections});
-                break;
-
-            default: return;
-        }
-        this.validateAsset(asset);
+    async getAssetDetails(selectedAssetKey, selectedCategory) {
+        const asset = await getAssetById(selectedCategory, selectedAssetKey);
+        const assetConnections = this.countAssetConnections(asset);
+        const assetColor = AssetCategoryEnum[asset["Asset Type"].toUpperCase()].color;
+        this.setState({asset: asset, assetColor: assetColor, assetConnections: assetConnections});
+        await this.validateAsset(asset);
     }
 
-    validateAsset(asset) {
-        var missingDetails = [];
-        if(asset["Asset Type"] === "Infrastructure") {
-            if(!asset["Long Type"] || asset["Long Type"].trim().length == 0) 
-                missingDetails.push("Long Type");
-        } else {
-            if(!asset["Type"] || asset["Type"].trim().length == 0) 
-                missingDetails.push("Type");
-        }
-        if(!asset["Owner"] || asset["Owner"].trim().length == 0) 
-            missingDetails.push("Owner");
-        if(!asset["Vendor"] || asset["Vendor"].trim().length == 0) 
-            missingDetails.push("Vendor");
-        if(!asset["Language"] || asset["Language"].trim().length == 0) 
-            missingDetails.push("Language");
-        if(missingDetails.length != 0)
-        {
-            ERRORLOG.log(missingDetails.join(", ") + ' details missing for asset "' + asset["Name"] + '"', JSON.stringify(asset));
-        }
+    async validateAsset(asset) {
+        const type = asset["Asset Type"] === "Infrastructure" ? "Long Type" : "Type";
+        const requiredDetails = [type, "Owner", "Vendor", "Language"];
+        const missingDetails = requiredDetails.filter(column => !asset[column] || asset[column].trim().length === 0);
+        if (missingDetails.length === 0) return;
+        await ERRORLOG.log(missingDetails.join(", ") + ' details missing for asset "' + asset["Name"] + '"', JSON.stringify(asset));
     }
 
-    // TODO rename to countAssetConnections because that's what it does
-    getAssetConnections(asset) {
-        let connections = 0;
-
-        if(asset["Application Connections"] && asset['Application Connections'].trim().length)
-        {
-            console.log(asset['Application Connections'])
-            connections += asset['Application Connections'].split(';').length;
-        }
-        if(asset["Data Connections"] && asset['Data Connections'].trim().length)
-        {
-            connections += asset['Data Connections'].split(';').length;
-        }
-        if(asset["Infrastructure Connections"] && asset['Infrastructure Connections'].trim().length)
-        {
-            connections += asset['Infrastructure Connections'].split(';').length;
-        }
-        if(asset["Talent Connections"] && asset['Talent Connections'].trim().length)
-        {
-            connections += asset['Talent Connections'].split(';').length;
-        }
-        if(asset["Projects Connections"] && asset['Projects Connections'].trim().length)
-        {
-            connections += asset['Projects Connections'].split(';').length;
-        }
-        if(asset["Business Connections"] && asset['Business Connections'].trim().length)
-        {
-            connections += asset['Business Connections'].split(';').length;
-        }
-
-        return connections;
+    countAssetConnections(asset) {
+        return Object.values(AssetCategoryEnum).map(category => {
+            const connections = asset[category.name + " Connections"];
+            return connections && connections.trim().length ? connections.split(";").length : 0;
+        }).reduce((a, b) => a + b, 0);
     }
 
     render() {
-        if(this.state.asset){
-            return (
-                <div id="assetDetail" className="card">
-                    <div id="assetDetailHeader">
-                        <div> 
-                            Details
-                        </div>
-                    </div>
-                    <div id="assetName" style={{ color: this.state.assetColor }}>{this.state.asset["Name"]}</div>
-                        <div id="assetDetailSections">
-                            <div>Connections: {this.state.assetConnections}</div>
-                            <div>Type: {this.state.asset["Asset Type"] === "Infrastructure" ? this.state.asset["Long Type"] : this.state.asset["Type"]}</div>
-                            <div>Owner: {this.state.asset["Owner"]}</div>
-                            <div>Vendor: {this.state.asset["Vendor"]}</div>
-                            <div>Language: {this.state.asset["Language"]}</div>
-                            <div>Software: {this.state.asset["Software"]}</div>
-                            <div>Business Function: {this.state.asset["Business Function"]}</div>
-                            <div>Comment: {this.state.asset["Comment"]}</div>
-                        </div>
+        const asset = this.state.asset;
+        return asset ? (<div id="assetDetail" className="card">
+                <div id="assetDetailHeader">
+                    <div>Details</div>
                 </div>
-    
-            );
-        } else {
-            return null;
-        }
+                <div id="assetName" style={{color: this.state.assetColor}}>{asset["Name"]}</div>
+                <div id="assetDetailSections">
+                    <div>Connections: {this.state.assetConnections}</div>
+                    <div>Type: {asset["Asset Type"] === "Infrastructure" ? asset["Long Type"] : asset["Type"]}</div>
+                    <div>Owner: {asset["Owner"]}</div>
+                    <div>Vendor: {asset["Vendor"]}</div>
+                    <div>Language: {asset["Language"]}</div>
+                    <div>Software: {asset["Software"]}</div>
+                    <div>Business Function: {asset["Business Function"]}</div>
+                    <div>Comment: {asset["Comment"]}</div>
+                </div>
+            </div>
+
+        ) : null;
     }
 }
-

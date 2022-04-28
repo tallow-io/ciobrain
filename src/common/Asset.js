@@ -1,242 +1,31 @@
 import axios from "axios"
-import { axisBottom } from "d3-axis"
+import {AssetCategoryEnum} from "../components/AssetCategoryEnum.js";
 
-let URL =
-    process.env.NODE_ENV === "development"
-        ? "http://localhost:3001/asset"
-        : "https://ciobrainapi.azurewebsites.net/asset"
-let applicationAssetURL = URL + "/application"
-let dataAssetURL = URL + "/data"
-let infrastructureAssetURL = URL + "/infrastructure"
-let talentAssetURL = URL + "/talent"
-let projectsAssetURL = URL + "/projects"
-let businessAssetURL = URL + "/business"
+const URL = process.env.NODE_ENV === "development" ? "http://localhost:3001/asset" : "https://ciobrainapi.azurewebsites.net/asset";
+const api = axios.create({baseURL: URL});
 
-export async function postApplicationAsset(asset) {
+const get = async url => {
     try {
-        const response = await axios.post(applicationAssetURL, asset)
-        return response.data
+        return (await api.get(url)).data;
     } catch (error) {
-        console.error(error)
+        console.log(error);
     }
 }
 
-export async function postDataAsset(asset) {
+const post = async (url, data) => {
     try {
-        const response = await axios.post(dataAssetURL, asset)
-        return response.data
+        return (await api.post(url, data)).data;
     } catch (error) {
-        console.error(error)
+        console.log(error);
     }
 }
 
-export async function postInfrastructureAsset(asset) {
-    try {
-        const response = await axios.post(infrastructureAssetURL, asset)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
+export const getAssetById = async (category, id) => await get(`/${category}/${id}`);
 
-export async function postTalentAsset(asset) {
-    try {
-        const response = await axios.post(talentAssetURL, asset)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
+export const getAssetChildrenById = async (category, id) => await get(`/${category}/${id}/children`);
 
-export async function postProjectsAsset(asset) {
-    try {
-        const response = await axios.post(projectsAssetURL, asset)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
+export const getAllAssetsForCategory = async category => await get(`/${category}`);
 
-export async function postBusinessAsset(asset) {
-    try {
-        const response = await axios.post(businessAssetURL, asset)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
+export const pushAssets = async (category, assets) => await post(`/${category}`, assets);
 
-export async function getApplicationAssetById(id) {
-    try {
-        const response = await axios.get(applicationAssetURL + "/" + id)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getDataAssetById(id) {
-    try {
-        const response = await axios.get(dataAssetURL + "/" + id)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getInfrastructureAssetById(id) {
-    try {
-        const response = await axios.get(infrastructureAssetURL + "/" + id)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getTalentAssetById(id) {
-    try {
-        const response = await axios.get(talentAssetURL + "/" + id)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getProjectsAssetById(id) {
-    try {
-        const response = await axios.get(projectsAssetURL + "/" + id)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getBusinessAssetById(id) {
-    try {
-        const response = await axios.get(businessAssetURL + "/" + id)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getAllApplicationAssets() {
-    try {
-        const response = await axios.get(applicationAssetURL)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getAllDataAssets() {
-    try {
-        const response = await axios.get(dataAssetURL)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getAllInfrastructureAssets() {
-    try {
-        const response = await axios.get(infrastructureAssetURL)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getAllTalentAssets() {
-    try {
-        const response = await axios.get(talentAssetURL)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getAllProjectsAssets() {
-    try {
-        const response = await axios.get(projectsAssetURL)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getAllBusinessAssets() {
-    try {
-        const response = await axios.get(businessAssetURL)
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getAllAssets() {
-    return (
-        await Promise.all([
-            getAllApplicationAssets(),
-            getAllDataAssets(),
-            getAllInfrastructureAssets(),
-            getAllTalentAssets(),
-            getAllProjectsAssets(),
-            getAllBusinessAssets()
-        ])
-    ).flat()
-}
-
-export async function getApplicationAssetChildrenById(id) {
-    try {
-        const response = await axios.get(applicationAssetURL + "/" + id + "/children")
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getDataAssetChildrenById(id) {
-    try {
-        const response = await axios.get(dataAssetURL + "/" + id + "/children")
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getInfrastructureAssetChildrenById(id) {
-    try {
-        const response = await axios.get(infrastructureAssetURL + "/" + id + "/children")
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getTalentAssetChildrenById(id) {
-    try {
-        const response = await axios.get(talentAssetURL + "/" + id + "/children")
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getProjectsAssetChildrenById(id) {
-    try {
-        const response = await axios.get(projectsAssetURL + "/" + id + "/children")
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function getBusinessAssetChildrenById(id) {
-    try {
-        const response = await axios.get(businessAssetURL + "/" + id + "/children")
-        return response.data
-    } catch (error) {
-        console.error(error)
-    }
-}
+export const getAllAssets = async () => (await Promise.all(Object.values(AssetCategoryEnum).map(c => getAllAssetsForCategory(c.name)))).flat()

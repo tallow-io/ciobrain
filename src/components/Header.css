@@ -1,5 +1,5 @@
 .header-text {
-    font-family: Roboto;
+    font-family: Roboto, serif;
     font-style: normal;
     font-weight: bold;
     font-size: 36px;
@@ -16,7 +16,6 @@
     background-image: -webkit-radial-gradient(50% 50%, #742ad5, #2527e4, #02ca92);
     color: transparent;
     -webkit-background-clip: text;
-    background-clip: text;
 }
 
 #ciobrain-text {
@@ -28,7 +27,6 @@
     background-image: -webkit-radial-gradient(50% 50%, #742ad5, #2527e4, #02ca92);
     color: transparent;
     -webkit-background-clip: text;
-    background-clip: text;
 }
 
 #cloud-img {
