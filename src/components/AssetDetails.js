@@ -49,7 +49,7 @@ export default class AssetDetails extends Component {
                 </div>
                 <div id="assetName" style={{color: this.state.assetColor}}>{asset["Name"]}</div>
                 <div id="assetDetailSections">
-                    <div>Connections: {this.state.assetConnections}</div>
+                    <div id="asset_connections">Connections: {this.state.assetConnections}</div>
                     <div>Type: {asset["Asset Type"] === "Infrastructure" ? asset["Long Type"] : asset["Type"]}</div>
                     <div>Owner: {asset["Owner"]}</div>
                     <div>Vendor: {asset["Vendor"]}</div>

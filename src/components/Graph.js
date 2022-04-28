@@ -356,6 +356,17 @@ export default class Graph extends Component {
             .call(d3.drag().on("start", dragStart).on("drag", dragging).on("end", dragEnd))
 
         updateForces()
+
+        // get the selected node from the list of nodes and update connection in AssetDetails
+        // this is a cheap fix. need to find a better way
+        data.nodes.forEach(node => {
+            if(matchSelected(node, true, false)){
+                const elem = document.getElementById("asset_connections");
+                if(!elem) return;
+                elem.innerHTML = "Connections: " + node.Connections;
+            }
+        })
+
     }
 
     render() {
