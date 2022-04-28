@@ -7,11 +7,9 @@ import Graph from "./components/Graph"
 import MessageModal from "./components/MessageModal"
 import Popup from "reactjs-popup"
 
-
-
 export default class App extends Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.state = {
             selectedCategory: null,
             selectedAssetKey: null,
@@ -22,13 +20,13 @@ export default class App extends Component {
     }
 
     addMessage(message) {
-        var messages = this.state.messages
-        messages = messages.push(message)
+        let messages = this.state.messages
+        messages.push(message)
         this.setState({ message: messages })
     }
 
     removeMessage(e) {
-        var messages = this.state.messages
+        const messages = this.state.messages
         messages.splice(e.currentTarget.outerHTML.replace(/\D/g, ""))
         this.setState({ message: messages })
     }
@@ -43,47 +41,27 @@ export default class App extends Component {
 
     render() {
         return (
-            <>
-            <Header />
-        
-            <div class = "mobileAssetsContainer">
-                <Popup
-                trigger={<button class="chooseAssetButton"  >ASSETS</button>}
-                modal={false}
-                closeOnEscape={false}
-                closeOnDocumentClick={true}                    
-                >
-                <AssetMenu  selectAsset={this.selectAsset.bind(this)} />
-                {close => this.popupContent(close)}
-                </Popup>
+            <div>
+                <Header />
                 <AssetDetails
                     selectedCategory={this.state.selectedCategory}
                     selectedAssetKey={this.state.selectedAssetKey}
-                    />
-            </div>
-
-            <div class = "assetsContainer">                  
-                <AssetDetails
-                            selectedCategory={this.state.selectedCategory}
-                            selectedAssetKey={this.state.selectedAssetKey}
-                            />
+                />
                 <AssetMenu selectAsset={this.selectAsset.bind(this)} />
+                <Graph
+                    selectedCategory={this.state.selectedCategory}
+                    selectedAssetKey={this.state.selectedAssetKey}
+                />
+                {this.state.messages &&
+                    this.state.messages.map((message, index) => (
+                        <MessageModal
+                            key={index}
+                            index={index}
+                            message={message}
+                            removeMessage={this.removeMessage}
+                        />
+                    ))}
             </div>
-            <Graph
-                selectedCategory={this.state.selectedCategory}
-                selectedAssetKey={this.state.selectedAssetKey}
-            />
-
-      
-            {this.state.messages &&
-                this.state.messages.map((message, index) => (
-                    <MessageModal
-                        index={index}
-                        message={message}
-                        removeMessage={this.removeMessage}
-                    />
-                ))}    
-            </>
         )
     }
 }

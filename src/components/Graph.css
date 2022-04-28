@@ -18,13 +18,10 @@
     font-weight: normal;
 }
 
-
 @media screen and (max-width: 812px) {
-.graph{  
-    position: relative;
-    left:0px;
-    top:-200px;
+    .graph {
+        position: relative;
+        left: 0px;
+        top: -200px;
+    }
 }
-
-}
-

@@ -22,7 +22,7 @@ button {
     color: gray;
 }
 
-.closebtn {
+.closeButton {
     margin-left: 15px;
     color: white;
     font-weight: bold;
@@ -33,7 +33,7 @@ button {
     transition: 0.3s;
 }
 
-.closebtn:hover {
+.closeButton:hover {
     color: black;
 }
 
@@ -51,7 +51,12 @@ button {
     border-bottom: 2px solid var(--blue);
     text-align: center;
     padding: 10px;
-    background-image: -webkit-radial-gradient(50% 50%, #742ad5, #2527e4, #02ca92);
+    background-image: -webkit-radial-gradient(
+        50% 50%,
+        #742ad5,
+        #2527e4,
+        #02ca92
+    );
     color: transparent;
     -webkit-background-clip: text;
 }
@@ -70,14 +75,20 @@ button {
     cursor: pointer;
     position: absolute;
     display: block;
-    padding: 2px 5px;
-    line-height: 20px;
+    text-align: center;
     right: -10px;
     top: -10px;
     font-size: 24px;
-    background: #ffffff;
-    border-radius: 18px;
-    border: 1px solid #cfcece;
+    width: 20px;
+    line-height: 20px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+    border: 1px solid #606060;
+}
+
+.modal > .close:hover {
+    background-color: var(--gray);
 }
 
 .menu-item {
@@ -105,7 +116,17 @@ button {
     color: white;
 }
 
-.loadButton:hover {
+.loadButton:hover,
+.loadButton:disabled {
     background-color: var(--gray);
     border: 1px solid var(--gray);
+}
+
+.importDetails {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+    padding-bottom: 10px;
 }

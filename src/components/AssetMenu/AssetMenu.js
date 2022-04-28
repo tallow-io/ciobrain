@@ -4,8 +4,8 @@ import { AssetCategoryEnum } from "../AssetCategoryEnum"
 import AssetImport from "../AssetImport/AssetImport.js"
 
 export default class AssetMenu extends Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.state = {
             selectedCategory: null,
             selectedAssetKey: null
@@ -30,6 +30,7 @@ export default class AssetMenu extends Component {
                 </div>
                 {Object.values(AssetCategoryEnum).map(category => (
                     <AssetCategoryOption
+                        key={category.name}
                         category={category.name}
                         selected={this.state.selectedCategory === category.name}
                         color={category.color}

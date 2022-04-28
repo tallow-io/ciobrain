@@ -1,9 +1,9 @@
 import axios from "axios"
-import App from "./../App"
 
-let URL = process.env.DEVELOPMENT
-    ? "https://localhost:3001"
-    : "https://ciobrainapi.azurewebsites.net/asset"
+const URL =
+    process.env.NODE_ENV === "development"
+        ? "http://localhost:3001/asset"
+        : "https://ciobrainapi.azurewebsites.net/asset"
 let errorLoggingURL = URL + "/log"
 
 export async function log(error, details) {
@@ -25,8 +25,10 @@ function displayMessage(error) {
 }
 
 function getCurrentDateTime() {
-    var today = new Date()
-    var date = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate()
-    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds()
-    return date + " " + time
+    const today = new Date()
+    const date = `${today.getFullYear()}-${
+        today.getMonth() + 1
+    }-${today.getDate()}`
+    const time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`
+    return `${date} ${time}`
 }

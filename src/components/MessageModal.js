@@ -1,8 +1,8 @@
 import React, { Component } from "react"
 
 export default class MessageModal extends Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.state = {}
     }
 
@@ -10,10 +10,9 @@ export default class MessageModal extends Component {
         return (
             <div className="alert info">
                 <span
-                    className="closebtn"
+                    className="closeButton"
                     index={this.props.index}
-                    onClick={this.props.removeMessage}
-                >
+                    onClick={this.props.removeMessage}>
                     &times;
                 </span>
                 <strong>WARNING: </strong> {this.props.message}

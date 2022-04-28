@@ -1,4 +1,11 @@
-const { By, Key, Builder, Capabilities, Capability, promise } = require("selenium-webdriver")
+const {
+    By,
+    Key,
+    Builder,
+    Capabilities,
+    Capability,
+    promise
+} = require("selenium-webdriver")
 require("chromedriver")
 
 /* Test: firstTest()
@@ -15,7 +22,9 @@ async function displayAssetDetails() {
 
     //locate asset menu and option
     await driver.findElement(By.id("assetMenuHeader"))
-    const assetCategoryOption = driver.findElement(By.className("assetCategoryOption"))
+    const assetCategoryOption = driver.findElement(
+        By.className("assetCategoryOption")
+    )
 
     //click asset category and option
     await assetCategoryOption.click()

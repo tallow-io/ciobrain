@@ -26,18 +26,17 @@ const INVALID_FILE = {}
 export default class AssetImport extends Component {
     constructor(props) {
         super(props)
-        this.state = { assetType: null, asset: null }
+        this.state = { category: null, asset: null, result: null }
     }
 
     render() {
         return (
             <Popup
-                trigger={<button className="button">Import</button>}
+                trigger={<button className="importButton">Import</button>}
                 modal={true}
                 closeOnEscape={false}
                 closeOnDocumentClick={false}
-                contentStyle={modalStyle}
-            >
+                contentStyle={modalStyle}>
                 {close => this.popupContent(close)}
             </Popup>
         )
@@ -46,7 +45,7 @@ export default class AssetImport extends Component {
     popupContent(close) {
         const closeAndReset = event => {
             close(event)
-            this.setState({ assetType: null, asset: null })
+            this.setState({ category: null, asset: null, result: null })
         }
 
         const labelStyle = color => ({
@@ -58,9 +57,9 @@ export default class AssetImport extends Component {
             justifyContent: "center"
         })
 
-        const inputResult = _ => {
-            const assetType = this.state.assetType
-            switch (assetType) {
+        const inputResult = () => {
+            const category = this.state.category
+            switch (category) {
                 case null:
                     return ""
                 case INVALID_FILE:
@@ -68,12 +67,14 @@ export default class AssetImport extends Component {
                 default:
                     return (
                         <>
-                            <label style={labelStyle(assetType.color)}>{assetType.name}</label>
+                            <label style={labelStyle(category.color)}>
+                                {category.name}
+                            </label>
                             <button
                                 className="loadButton"
+                                disabled={this.state.result}
                                 type="submit"
-                                style={{ width: "33.33%" }}
-                            >
+                                style={{ width: "33.33%" }}>
                                 Confirm
                             </button>
                         </>
@@ -83,7 +84,53 @@ export default class AssetImport extends Component {
 
         const submit = event => {
             event.preventDefault()
-            this.pushAssets().then(console.log)
+            this.pushAssets().then(result => {
+                this.setState({ result: result })
+            })
+        }
+
+        const validateResult = () => {
+            const result = this.state.result
+            if (!result) return null
+            const error = result["error"]
+            if (error)
+                return (
+                    <div className="importDetails" style={{ color: "red" }}>
+                        {error}
+                    </div>
+                )
+
+            const [imported, duplicate, invalid] = [
+                result["imported"],
+                result["duplicate"],
+                result["invalid"]
+            ]
+            const importedCount = parseInt(imported)
+            return (
+                <>
+                    <div className="importDetails">
+                        <div>
+                            Imported: <b>{imported}</b>
+                        </div>
+                        <div>
+                            Duplicate: <b>{duplicate}</b>
+                        </div>
+                        <div>
+                            Invalid: <b>{invalid}</b>
+                        </div>
+                    </div>
+                    {importedCount ? (
+                        <div style={{ textAlign: "center" }}>
+                            <button
+                                type="button"
+                                className="loadButton"
+                                onClick={() => window.location.reload()}>
+                                Refresh
+                            </button>
+                        </div>
+                    ) : null}
+                </>
+            )
         }
 
         return (
@@ -99,10 +146,13 @@ export default class AssetImport extends Component {
                             accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                             style={{ width: "33.34%", margin: "auto" }}
                             id="asset-data"
-                            onChange={event => this.validateFile(event.target.files[0])}
+                            onChange={event =>
+                                this.validateFile(event.target.files[0])
+                            }
                         />
                         {inputResult()}
                     </form>
+                    {validateResult()}
                 </div>
             </div>
         )
@@ -110,48 +160,47 @@ export default class AssetImport extends Component {
 
     async pushAssets() {
         const state = this.state
-        const assetType = state.assetType
+        const category = state.category
         const asset = state.asset
-        if (!assetType || !asset) return { error: "Invalid Asset" }
-        switch (assetType) {
-            case AssetCategoryEnum.APPLICATION:
-                return await ASSET.postApplicationAsset(asset)
-            case AssetCategoryEnum.DATA:
-                return await ASSET.postDataAsset(asset)
-            case AssetCategoryEnum.INFRASTRUCTURE:
-                return await ASSET.postInfrastructureAsset(asset)
-            case AssetCategoryEnum.TALENT:
-                return await ASSET.postTalentAsset(asset)
-            case AssetCategoryEnum.PROJECTS:
-                return await ASSET.postProjectsAsset(asset)
-            case AssetCategoryEnum.BUSINESS:
-                return await ASSET.postBusinessAsset(asset)
-            default:
-                return { error: "Invalid Asset" }
-        }
+        if (!category || !asset) return { error: "Invalid Asset" }
+        return await ASSET.pushAssets(category.name, asset)
     }
 
     validateFile(file) {
         if (!file) {
-            this.setState({ assetType: null, asset: null })
+            this.setState({ category: null, asset: null, result: null })
             return
         }
-        const invalidFile = { assetType: INVALID_FILE, asset: INVALID_FILE }
+        const invalidFile = {
+            category: INVALID_FILE,
+            asset: INVALID_FILE,
+            result: null
+        }
         const reader = new FileReader()
         reader.onload = ev => {
             try {
                 const workbook = XLSX.read(ev.target.result, { type: "binary" })
-                const assets = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])
-                const type = Object.values(AssetCategoryEnum).find(type =>
-                    assets[0].hasOwnProperty(type.name + " ID")
+                const assets = XLSX.utils.sheet_to_json(
+                    workbook.Sheets[workbook.SheetNames[0]]
                 )
-                const valid = type && assets.every(asset => asset.hasOwnProperty(type.name + " ID"))
-                this.setState(valid ? { assetType: type, asset: assets } : invalidFile)
+                const category = Object.values(AssetCategoryEnum).find(c =>
+                    assets[0].hasOwnProperty(c.name + " ID")
+                )
+                const valid =
+                    category &&
+                    assets.every(asset =>
+                        asset.hasOwnProperty(category.name + " ID")
+                    )
+                this.setState(
+                    valid
+                        ? { category: category, asset: assets, result: null }
+                        : invalidFile
+                )
             } catch (ex) {
                 this.setState(invalidFile)
             }
         }
-        reader.onerror = _ => this.setState(invalidFile)
+        reader.onerror = () => this.setState(invalidFile)
         reader.readAsBinaryString(file)
     }
 }
