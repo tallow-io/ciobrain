@@ -43,11 +43,29 @@ export default class App extends Component {
         return (
             <div>
                 <Header />
-                <AssetDetails
+                <div class ="mobileAssetsContainer">
+                    <Popup
+                    trigger={<button class="chooseAssetButton"  >ASSETS</button>}
+                    modal={true}
+                    closeOnEscape={false}
+                    closeOnDocumentClick={true}                    
+                    >
+                    <AssetMenu  selectAsset={this.selectAsset.bind(this)} />
+                    {close => this.popupContent(close)}
+                    </Popup>
+
+                    <AssetDetails
                     selectedCategory={this.state.selectedCategory}
                     selectedAssetKey={this.state.selectedAssetKey}
-                />
-                <AssetMenu selectAsset={this.selectAsset.bind(this)} />
+                    />
+                </div>
+                <div class ="assetsContainer">
+                    <AssetDetails
+                        selectedCategory={this.state.selectedCategory}
+                        selectedAssetKey={this.state.selectedAssetKey}
+                    />
+                    <AssetMenu selectAsset={this.selectAsset.bind(this)} />
+                </div>                
                 <Graph
                     selectedCategory={this.state.selectedCategory}
                     selectedAssetKey={this.state.selectedAssetKey}
