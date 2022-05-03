@@ -1,8 +1,8 @@
-import React, { Component } from "react"
+import React, {Component} from "react"
 import * as d3 from "d3"
 import "./Graph.css"
-import { AssetCategoryEnum } from "./AssetCategoryEnum"
-import { getAllAssets, getAssetChildrenById } from "../common/Asset.js"
+import {AssetCategoryEnum} from "./AssetCategoryEnum"
+import {getAllAssets, getAssetChildrenById} from "../common/Asset.js"
 
 export default class Graph extends Component {
     constructor(props) {
@@ -16,6 +16,7 @@ export default class Graph extends Component {
             height: null,
             resizeTimeout: null,
             data: { nodes: [], links: [] },
+            zoomTransform: null,
             expanded: []
         }
     }
@@ -44,28 +45,28 @@ export default class Graph extends Component {
 
     async componentDidMount() {
         this.initDimensions()
-        window.addEventListener("resize", _ => {
+        window.addEventListener("resize", async _ => {
             if (!this.state.selectedCategory || !this.state.selectedAssetKey)
                 return
             clearTimeout(this.state.resizeTimeout)
             this.setState({
-                resizeTimeout: setTimeout(this.updateDimensions.bind(this), 500)
+                resizeTimeout: setTimeout(await this.updateDimensions, 500)
             })
         })
     }
 
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.updateDimensions.bind(this))
+    async componentWillUnmount() {
+        window.removeEventListener("resize", await this.updateDimensions)
     }
 
-    initDimensions() {
+    initDimensions = () => {
         this.setState({ width: window.innerWidth, height: window.innerHeight })
-    }
+    };
 
-    updateDimensions() {
+    updateDimensions = async () => {
         this.setState({ width: window.innerWidth, height: window.innerHeight })
-        this.update(this.state.selectedCategory, this.state.selectedAssetKey)
-    }
+        await this.update(this.state.selectedCategory, this.state.selectedAssetKey)
+    };
 
     clearGraph() {
         d3.selectAll("svg").remove().exit()
@@ -200,19 +201,31 @@ export default class Graph extends Component {
             return assetID && assetID === selectedAssetKey ? ifMatch : otherwise
         }
 
+        const zoom = d3.zoom()
+        let [x, y, k] = [50, 50, 1];
+        
         const svg = container
             .append("svg")
             .attr("width", width)
             .attr("height", height)
-            .call(
-                d3
-                    .zoom()
-                    .on("zoom", e => svg.attr("transform", e.transform))
+            .call(zoom.transform, () => {
+                const t = this.state.zoomTransform
+                if (t) {
+                    [x, y, k] = [t.x, t.y, t.k];
+                    return d3.zoomIdentity.translate(x, y).scale(k);
+                } else {
+                    return d3.zoomIdentity;
+                }
+            })
+            .call(zoom.on("zoom", e => {
+                        svg.attr("transform", e.transform);
+                        this.setState({zoomTransform: e.transform})
+                    })
                     .scaleExtent([0.45, 3.5]) // zoom scale restriction
                 //.translateExtent() // can be used to restrict pan
             )
             .append("g")
-            .attr("transform", "translate(50,50)")
+            .attr("transform", `translate(${x},${y})scale(${k})`)
 
         const data = this.state.data
 

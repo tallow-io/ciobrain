@@ -78,9 +78,9 @@ export default class AssetDetails extends Component {
             <div id="assetDetail" className="card">
                 <input type="checkbox" id="expandDetails"/>
                 <div id="assetDetailHeader">
-                    <label class="detailsLabel" htmlFor="expandDetails">Details</label>
+                    <label className="detailsLabel" htmlFor="expandDetails">Details</label>
                 </div>
-                <div class="detailsContent">
+                <div className="detailsContent">
                     <div id="assetName" style={{ color: this.state.assetColor }}>
                         {asset["Name"]}
                     </div>
