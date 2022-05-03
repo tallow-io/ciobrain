@@ -76,29 +76,33 @@ export default class AssetDetails extends Component {
         const asset = this.state.asset
         return asset ? (
             <div id="assetDetail" className="card">
+                <input type="checkbox" id="expandDetails"/>
                 <div id="assetDetailHeader">
-                    <div>Details</div>
+                    <label class="detailsLabel" htmlFor="expandDetails">Details</label>
                 </div>
-                <div id="assetName" style={{ color: this.state.assetColor }}>
-                    {asset["Name"]}
-                </div>
-                <div id="assetDetailSections">
-                    <div id="asset_connections">
-                        Connections: {this.state.assetConnections}
+                <div class="detailsContent">
+                    <div id="assetName" style={{ color: this.state.assetColor }}>
+                        {asset["Name"]}
                     </div>
-                    <div>
-                        Type:{" "}
-                        {asset["Asset Type"] === "Infrastructure"
-                            ? asset["Long Type"]
-                            : asset["Type"]}
+                    <div id="assetDetailSections">
+                        <div id="asset_connections">
+                            Connections: {this.state.assetConnections}
+                        </div>
+                        <div>
+                            Type:{" "}
+                            {asset["Asset Type"] === "Infrastructure"
+                                ? asset["Long Type"]
+                                : asset["Type"]}
+                        </div>
+                        <div>Owner: {asset["Owner"]}</div>
+                        <div>Vendor: {asset["Vendor"]}</div>
+                        <div>Language: {asset["Language"]}</div>
+                        <div>Software: {asset["Software"]}</div>
+                        <div>Business Function: {asset["Business Function"]}</div>
+                        <div>Comment: {asset["Comment"]}</div>
                     </div>
-                    <div>Owner: {asset["Owner"]}</div>
-                    <div>Vendor: {asset["Vendor"]}</div>
-                    <div>Language: {asset["Language"]}</div>
-                    <div>Software: {asset["Software"]}</div>
-                    <div>Business Function: {asset["Business Function"]}</div>
-                    <div>Comment: {asset["Comment"]}</div>
                 </div>
+
             </div>
         ) : null
     }
