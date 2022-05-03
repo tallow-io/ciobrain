@@ -284,6 +284,8 @@ export default class Graph extends Component {
             matchSelected(d, "url(#selectedGlow)", "url(#normalGlow)")
         )
 
+        const forceY = width <= 812 ? height/7 : (2 * height) / 5
+
         // draw the graph
         const simulation = d3
             .forceSimulation(data.nodes)
@@ -293,7 +295,7 @@ export default class Graph extends Component {
             ) // .distance(50)    // play around with this if you want
             .force("charge", d3.forceManyBody().strength(-30))
             .force("collide", d3.forceCollide().radius(65))
-            .force("center", d3.forceCenter((2 * width) / 5, (2 * height) / 5))
+            .force("center", d3.forceCenter((2 * width) / 5, forceY))
             .on("tick", _ => {
                 // position the links and nodes in the window where the simulation puts them
                 link.attr("x1", d => d.source.x)

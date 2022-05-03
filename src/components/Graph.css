@@ -1,8 +1,8 @@
 .graph {
     margin: 0;
     position: absolute;
-    top: 50px;
-    left: 200px;
+    top: 0;
+    left: 22em;
 }
 
 .hoverInfo {
@@ -21,7 +21,6 @@
 @media screen and (max-width: 812px) {
     .graph {
         position: relative;
-        left: 0px;
-        top: -200px;
+        left: 0;
     }
 }

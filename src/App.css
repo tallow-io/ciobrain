@@ -13,19 +13,24 @@
     --opaque-gray: rgba(105, 105, 105, 0.1);
 }
 
+.assetsContainer {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 42px;
+    top: 60px;
+}
+
 .card {
     position: relative;
     width: 300px;
     min-height: 350px;
-    left: 42px;
-    top: 60px;
     margin: 20px 0;
     background: #ffffff;
     border: 1px solid #d6d6d6;
     box-sizing: border-box;
     box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
-
     height: auto;
 }
 
@@ -100,35 +105,27 @@
     background-color: var(--blue);
 }
 
-.chooseAssetButton {
-    background-color: #4c00ff; /* Green */
-    border: none;
-    color: white;
-    text-align: center;
-    font-size: 10px;
-    position: relative;
-    top: -25px;
-    width: 100%;
-    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
-    /* left:250px; */
-}
-
-.assetsContainer {
-    display: block;
-}
-
-.mobileAssetsContainer {
-    display: none;
-    padding: 10px;
-}
-
 @media screen and (max-width: 812px) {
-    .assetsContainer {
-        display: none;
+
+    .chooseAssetButton {
+        background-color: #4c00ff;
+        border: none;
+        color: white;
+        text-align: center;
+        font-size: 0.8em;
+        margin: 0;
+        width: 100%;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
     }
 
     .mobileAssetsContainer {
-        display: block;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .assetsContainer {
+        display: none;
     }
 
     .card {
@@ -138,38 +135,25 @@
     }
 
     #assetDetail {
-        position: relative;
-        background: #ffffff;
         border: 1px solid #220101;
-        box-sizing: border-box;
-        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
-        border-radius: 10px;
-        height: auto;
-        padding-bottom: 10px;
-        z-index: -1;
-        width: fit-content;
-        top: -20px;
+        width: -moz-fit-content;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: max-content;
+        padding-bottom: 1em;
     }
 
     #assetDetailHeader {
-        margin: 20px 0 0 20px;
         font-size: 15px;
-        font-weight: bold;
-        text-align: left;
-        font-family: "Roboto", sans-serif;
     }
 
     #assetDetailSections {
-        margin: 20px 0 0 20px;
-        font-size: 10px;
-        line-height: 10px;
-        text-align: left;
-        font-family: "Roboto", sans-serif;
+        font-size: 12px;
+        line-height: 15px;
     }
 
     #assetName {
-        text-align: left;
         font-size: 15px;
-        margin: 20px 0 0 20px;
     }
 }
