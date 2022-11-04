@@ -1,9 +1,9 @@
 import axios from "axios"
 import dotenv from 'dotenv';
 import { AssetCategoryEnum } from "../components/AssetCategoryEnum.js"
+import { URL } from "../../URL";
 dotenv.config()
 
-const URL = `https://ciobrain-api-aih.azurewebsites.net/asset`
 const api = axios.create({ baseURL: URL })
 
 const get = async url => {
