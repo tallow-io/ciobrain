@@ -1,7 +1,7 @@
 import axios from "axios"
 import dotenv from 'dotenv';
 import { AssetCategoryEnum } from "../components/AssetCategoryEnum.js"
-import { URL } from "../../URL";
+import { URL } from "../URL";
 dotenv.config()
 
 const api = axios.create({ baseURL: URL })
